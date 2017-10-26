@@ -1,1 +1,38 @@
 ***************BASIC SUDO CODE**************
+
+States: Looking_For_Dispencer, Moving_Tward_Dispencer, Getting_Balls, Moving_Away_From_Dispencer, Finding_Goal, Shooting
+
+main{
+
+
+    setup
+        set pwms
+        configure i/o
+        configure d/a
+
+
+}
+
+timer interrupt{
+
+
+
+
+}
+
+toutch sensor interupt{
+
+
+
+
+}
+
+
+motor count interrupt{
+
+
+
+}
+
+
+
