@@ -13,13 +13,19 @@
 
 //Configurations------------------------------------
 float motorPwmPeriod = 3999;
+float turretPwmPeriod = 3999;
+float launcherPwmPeriod = 3999;
 //--------------------------------------------------
 
-float morotSpeedPercent = 0;
+float motorSpeedPercent = 0;
+float turretSpeedPercent = 0;
+float launcherSpeedPercent = 0;
+int numberOfTouchSensorsHigh = 0;
 
 // Create a set of possible states
 enum {Looking_For_Dispencer, Moving_Tward_Dispencer, Getting_Balls, Moving_Away_From_Dispencer, Finding_Goal, Shooting} state;
 enum {Forward, Backward, RotateLeft, RotateRight} baseDirection;
+enum {RotateLeft, RotateRight} turretDirection;
 
 void initInputOutput();
 void initDigitalPorts();
@@ -39,6 +45,10 @@ void __attribute__((interrupt, no_auto_psv)) _CNInterrupt(void)
         case Looking_For_Dispencer:
             break;
         case Moving_Tward_Dispencer:
+            if(numberOfTouchSensorsHigh >1){
+                state = Getting_Balls;
+            }
+            numberOfTouchSensorsHigh++;
             break;
         case Getting_Balls:
             break;
@@ -112,22 +122,25 @@ int main(void) {
     initPwmPorts();
     initAnalogPorts();
 
-    state = Looking_For_Dispencer;
+    state = Moving_Tward_Dispencer;
+    
+    __delay_ms(3000);
     
     while(1){
         
         switch (state){
             case Looking_For_Dispencer:
                 //Rotate base to look for IR emitter
-                morotSpeedPercent = .3;
+                motorSpeedPercent = .3;
                 baseDirection = RotateLeft;
                 moveBase();
                 //Done when IR receiver emitter interrupts
                 break;
             case Moving_Tward_Dispencer:
                 //Set direction of both base motors
-                morotSpeedPercent = .8;
+                motorSpeedPercent = .8;
                 baseDirection = Forward;
+                //Turn on both base motors
                 moveBase();
                 //Done when both touch sensors interrupt
                 break;
@@ -142,14 +155,23 @@ int main(void) {
                 break;
             case Moving_Away_From_Dispencer:
                 //Set direction of both base motors
+                motorSpeedPercent = .8;
+                baseDirection = Backward;
                 //Turn on both base motors
+                moveBase();
                 //Done after motor step interrupt
                 break;
             case Finding_Goal:
                 //Look at which sensors are on
+                turretSpeedPercent = .8;
+                turretDirection = RotateLeft;
+                //Turn on both base motors
+                moveTurret();
                 break;
             case Shooting:
                 //Turn on shooting motors
+                launcherSpeedPercent = .8;
+                moveLauncher();
                 //Turn on Geniva
                 //Done after timer and no balls?
                 break;
@@ -296,12 +318,12 @@ void initPwmPorts(){
     OC1CON2 = 0;
    
     // Set period and duty cycle
-    OC1R = 3000;                // Set Output Compare value to achieve
+    OC1R = motorPwmPeriod*motorSpeedPercent;                // Set Output Compare value to achieve
                                 // desired duty cycle. This is the number
                                 // of timer counts when the OC should send
                                 // the PWM signal low. The duty cycle as a
                                 // fraction is OC1R/OC1RS.
-    OC1RS = 3999;               // Period of OC1 to achieve desired PWM 
+    OC1RS = motorPwmPeriod;               // Period of OC1 to achieve desired PWM 
                                 // frequency, FPWM. See Equation 15-1
                                 // in the datasheet. For example, for
                                 // FPWM = 1 kHz, OC1RS = 3999. The OC1RS 
@@ -333,12 +355,12 @@ void initPwmPorts(){
     OC2CON2 = 0;
    
     // Set period and duty cycle
-    OC2R = 3000;                // Set Output Compare value to achieve
+    OC2R = turretPwmPeriod*turretSpeedPercent;                // Set Output Compare value to achieve
                                 // desired duty cycle. This is the number
                                 // of timer counts when the OC should send
                                 // the PWM signal low. The duty cycle as a
                                 // fraction is OC1R/OC1RS.
-    OC2RS = 3999;               // Period of OC1 to achieve desired PWM 
+    OC2RS = turretPwmPeriod;               // Period of OC1 to achieve desired PWM 
                                 // frequency, FPWM. See Equation 15-1
                                 // in the datasheet. For example, for
                                 // FPWM = 1 kHz, OC1RS = 3999. The OC1RS 
@@ -370,12 +392,12 @@ void initPwmPorts(){
     OC3CON2 = 0;
    
     // Set period and duty cycle
-    OC3R = 3000;                // Set Output Compare value to achieve
+    OC3R = launcherPwmPeriod*launcherSpeedPercent;                // Set Output Compare value to achieve
                                 // desired duty cycle. This is the number
                                 // of timer counts when the OC should send
                                 // the PWM signal low. The duty cycle as a
                                 // fraction is OC1R/OC1RS.
-    OC3RS = 3999;               // Period of OC1 to achieve desired PWM 
+    OC3RS = launcherPwmPeriod;               // Period of OC1 to achieve desired PWM 
                                 // frequency, FPWM. See Equation 15-1
                                 // in the datasheet. For example, for
                                 // FPWM = 1 kHz, OC1RS = 3999. The OC1RS 
@@ -402,7 +424,7 @@ void initPwmPorts(){
 }
 
 void moveBase(){
-    OC1R = motorPwmPeriod*morotSpeedPercent;
+    OC1R = motorPwmPeriod*motorSpeedPercent;
     switch (baseDirection){
         case Forward:
             _LATB13 = 0;
@@ -421,7 +443,22 @@ void moveBase(){
             _LATB15 = 1;
             break;
         default:
-            morotSpeedPercent = 0;
+            motorSpeedPercent = 0;
             break;
     }
+}
+void moveTurret(){
+    OC2R = turretPwmPeriod*turretSpeedPercent;
+    switch (turretDirection){
+        case RotateLeft:
+            break;
+        case RotateRight:
+            break;
+        default:
+            turretSpeedPercent = 0;
+            break;
+    }
+}
+void moveLauncher(){
+    OC3R = launcherPwmPeriod*launcherSpeedPercent;
 }
