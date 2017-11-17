@@ -30,7 +30,7 @@ float blackBallInput = 0;
 int goal = 0;
 
 // Create a set of possible states
-enum {Looking_For_Dispencer, Moving_Tward_Dispencer, Getting_Balls, Moving_Away_From_Dispencer, Finding_Goal, Shooting, ERROR} state;
+enum {Looking_For_Dispencer, Moving_Tward_Dispencer, Getting_Balls, Moving_Away_From_Dispencer, Finding_Goal, Shooting, ERROR, DEBUG} state;
 enum {Forward, Backward, RotateLeft, RotateRight} baseDirection;
 enum {Left, Right} turretDirection;
 
@@ -83,8 +83,8 @@ void __attribute__((interrupt, no_auto_psv)) _T1Interrupt(void)
         case Getting_Balls:
             break;
         case Moving_Away_From_Dispencer:
-            irInput1 = ADC1BUF7;
-            irInput2 = ADC1BUF15;
+            irInput1 = ADC1BUF10;
+            irInput2 = ADC1BUF9;
             if(irInput1>irSensorAnalogThreshold){
                 goal = 1;
             }
@@ -111,7 +111,7 @@ void __attribute__((interrupt, no_auto_psv)) _T1Interrupt(void)
 int main(void) {
     
     _RCDIV = 0b010; // postscale oscillator (divide-by-4))
-
+    
     /* PIC 24 PINOUT
     Pin 1/RA5: --
     Pin 2/RA0: digital output for LED
@@ -119,7 +119,7 @@ int main(void) {
     Pin 4/RB0: PWM (Turret motor)
     Pin 5/RB1: Launch motor digital output/PWM
     Pin 6/RB2: Analog input for ROS
-    Pin 7/RA2: Analog input for Light sensor 1
+    Pin 7/RA2: Sleep
     Pin 8/RA3: Touch sensor(s) input
     Pin 9/RB4: --
     Pin 10/RA4: --
@@ -127,10 +127,10 @@ int main(void) {
     Pin 12/RB8: --
     Pin 13/RB9: --
     Pin 14/RA6: PWM for H-Bridge
-    Pin 15/RB12: Analog input for Light sensor 2
-    Pin 16/RB13: Dir 1
-    Pin 17/RB14: Sleep
-    Pin 18/RB15: Dir 2
+    Pin 15/RB12: Dir 1
+    Pin 16/RB13: Dir 2
+    Pin 17/RB14: Analog input for Light sensor 1
+    Pin 18/RB15: Analog input for Light sensor 2
     Pin 19/VSS: Vss
     Pin 20/VDD: Vdd
      * */
@@ -192,9 +192,9 @@ int main(void) {
             case Finding_Goal:
                 //Look at which sensors are on
                 turretSpeedPercent = .8;
-                if(goal = 0){
+                if(goal == 0){
                     turretDirection = Left;
-                }else if(goal = 3){
+                }else if(goal == 3){
                     turretDirection = Right;
                 }
                 //Turn on both base motors
@@ -217,6 +217,16 @@ int main(void) {
                 //delay
                 __delay_ms(300);
                 break;
+            case DEBUG:
+                //flash
+                _LATA0 = 1;
+                //delay
+                __delay_ms(500);
+                //flash
+                _LATA0 = 0;
+                //delay
+                __delay_ms(500);
+                break;
             default:
                 break;
         }
@@ -232,7 +242,7 @@ void initInputOutput(){
     TRISBbits.TRISB0 = 0;//Pin 4/RB0: PWM (Turret motor)
     TRISBbits.TRISB1 = 0;//Pin 4/RB0: PWM (Turret motor)
     TRISBbits.TRISB2 = 1;//Pin 6/RB2: Analog input for ROS
-    TRISAbits.TRISA2 = 1;//Pin 7/RA2: Analog input for Light sensor 1
+    TRISAbits.TRISA2 = 0;//Pin 7/RA2: Sleep
     TRISAbits.TRISA3 = 1;//Pin 8/RA3: Touch sensor(s) input
     //TRISBbits.TRISB4 = 0;
     //TRISAbits.TRISA4 = 0;
@@ -240,10 +250,10 @@ void initInputOutput(){
     //TRISBbits.TRISB8 = 0;
     //TRISBbits.TRISB9 = 0;
     TRISAbits.TRISA6 = 0;//Pin 14/RA6: PWM for H-Bridge
-    TRISBbits.TRISB12 = 1;//Pin 15/RB7: Analog input for Light sensor 2
-    TRISBbits.TRISB13 = 0;//Pin 16/RB13: Dir 1
-    TRISBbits.TRISB14 = 0;//Pin 17/RB14: Sleep
-    TRISBbits.TRISB15 = 0;//Pin 18/RB15: Dir 2
+    TRISBbits.TRISB12 = 0;//Pin 15/RB7: Dir 1
+    TRISBbits.TRISB13 = 0;//Pin 16/RB13: Dir 2
+    TRISBbits.TRISB14 = 1;//Pin 17/RB14: Analog input for Light sensor 1
+    TRISBbits.TRISB15 = 1;//Pin 18/RB15: Analog input for Light sensor 2
 }
 
 void initDigitalPorts(){
@@ -252,7 +262,7 @@ void initDigitalPorts(){
     ANSBbits.ANSB0 = 0;//Pin 4/RB0: PWM (Turret motor)
     ANSBbits.ANSB1 = 0;//Pin 4/RB0: PWM (Turret motor)
     ANSBbits.ANSB2 = 1;//Pin 6/RB2: Analog input for ROS
-    ANSAbits.ANSA2 = 1;//Pin 7/RA2: Analog input for Light sensor 1
+    ANSAbits.ANSA2 = 0;//Pin 7/RA2: Sleep
     ANSAbits.ANSA3 = 0;//Pin 8/RA3: Touch sensor(s) input
     ANSBbits.ANSB4 = 0;
     //ANSAbits.ANSA4 = 0;
@@ -260,10 +270,10 @@ void initDigitalPorts(){
     //ANSBbits.ANSB8 = 0;
     //ANSBbits.ANSB9 = 0;
     //ANSAbits.ANSA6 = 0;//Pin 14/RA6: PWM for H-Bridge
-    ANSBbits.ANSB12 = 1;//Pin 15/RB7: Analog input for Light sensor 2
-    ANSBbits.ANSB13 = 0;//Pin 16/RB13: Dir 1
-    ANSBbits.ANSB14 = 0;//Pin 17/RB14: Sleep
-    ANSBbits.ANSB15 = 0;//Pin 18/RB15: Dir 2
+    ANSBbits.ANSB12 = 0;//Pin 15/RB7: Dir 1
+    ANSBbits.ANSB13 = 0;//Pin 16/RB13: Dir 2
+    ANSBbits.ANSB14 = 1;//Pin 17/RB14: Analog input for Light sensor 1
+    ANSBbits.ANSB15 = 1;//Pin 18/RB15: Analog input for Light sensor 2
 }
 
 void initInterupts(){
@@ -319,10 +329,9 @@ void initAnalogPorts(){
 	// scan inputs
 	_CSCNA = 1;			// AD1CON2<10>
 	// choose which channels to scan, e.g. for ch AN12, set _CSS12 = 1;
-	_CSS0 = 1;			// AD1CSSH/L, pg. 217   ???mccann you might need more than one of these
-    _CSS1 = 1;			// AD1CSSH/L, pg. 217   ???mccann you might need more than one of these
-    _CSS2 = 1;			// AD1CSSH/L, pg. 217   ???mccann you might need more than one of these
-
+	_CSS4 = 1;			// AD1CSSH/L, pg. 217
+	_CSS9 = 1;			// AD1CSSH/L, pg. 217
+	_CSS10 = 1;			// AD1CSSH/L, pg. 217
 
 	/*** Select How Results are Presented in Buffer ***/
 	// set 12-bit resolution
@@ -337,7 +346,7 @@ void initAnalogPorts(){
 	/*** Select Interrupt Rate ***/
 	// interrupt rate should reflect number of analog channels used, e.g. if 
     // 5 channels, interrupt every 5th sample
-	_SMPI = 3;		// AD1CON2<6:2>  ??mccann is this right??
+	_SMPI = 2;		// AD1CON2<6:2>  ??mccann is this right??
 
 
 	/*** Turn on A/D Module ***/
@@ -345,9 +354,9 @@ void initAnalogPorts(){
     
     
     //*****************How to read the analog buffer******************
-    //float blackBallInput = ADC1BUF6;
-    //float irInput1 = ADC1BUF7;
-    //float irInput2 = ADC1BUF15;
+    //float blackBallInput = ADC1BUF4;  ------> pin6
+    //float irInput1 = ADC1BUF10;  ------> pin18
+    //float irInput2 = ADC1BUF9;  ------> pin17
 }
 
 void initPwmPorts(){
