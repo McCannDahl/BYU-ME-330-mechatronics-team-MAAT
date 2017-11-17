@@ -9,23 +9,30 @@
 #pragma config FNOSC = FRCDIV // select 8MHz oscillator with postscaler
 
 #include "xc.h"
+#define FCY 4000000
 #include <libpic30.h>
 
 //Configurations------------------------------------
 float motorPwmPeriod = 3999;
 float turretPwmPeriod = 3999;
 float launcherPwmPeriod = 3999;
+int numberOfBalls = 6;
+int maxIrSensorAnalogInput = 2048;
+int irSensorAnalogThreshold = 1500;
 //--------------------------------------------------
 
 float motorSpeedPercent = 0;
 float turretSpeedPercent = 0;
 float launcherSpeedPercent = 0;
-int numberOfTouchSensorsHigh = 0;
+float irInput1 = 0;
+float irInput2 = 0;
+float blackBallInput = 0;
+int goal = 0;
 
 // Create a set of possible states
-enum {Looking_For_Dispencer, Moving_Tward_Dispencer, Getting_Balls, Moving_Away_From_Dispencer, Finding_Goal, Shooting} state;
+enum {Looking_For_Dispencer, Moving_Tward_Dispencer, Getting_Balls, Moving_Away_From_Dispencer, Finding_Goal, Shooting, ERROR} state;
 enum {Forward, Backward, RotateLeft, RotateRight} baseDirection;
-enum {RotateLeft, RotateRight} turretDirection;
+enum {Left, Right} turretDirection;
 
 void initInputOutput();
 void initDigitalPorts();
@@ -33,6 +40,9 @@ void initAnalogPorts();
 void initPwmPorts();
 void initInterupts();
 void moveBase();
+void moveTurret();
+void moveLauncher();
+void setTimer();
 
 
 // Change Notification Interrupt Service Routine (ISR)
@@ -45,10 +55,7 @@ void __attribute__((interrupt, no_auto_psv)) _CNInterrupt(void)
         case Looking_For_Dispencer:
             break;
         case Moving_Tward_Dispencer:
-            if(numberOfTouchSensorsHigh >1){
-                state = Getting_Balls;
-            }
-            numberOfTouchSensorsHigh++;
+            state = Getting_Balls;
             break;
         case Getting_Balls:
             break;
@@ -76,6 +83,18 @@ void __attribute__((interrupt, no_auto_psv)) _T1Interrupt(void)
         case Getting_Balls:
             break;
         case Moving_Away_From_Dispencer:
+            irInput1 = ADC1BUF7;
+            irInput2 = ADC1BUF15;
+            if(irInput1>irSensorAnalogThreshold){
+                goal = 1;
+            }
+            else if(irInput2>irSensorAnalogThreshold){
+                goal = 2;
+            }
+            else{
+                goal = 3;
+            }
+            state = Finding_Goal;
             break;
         case Finding_Goal:
             break;
@@ -126,6 +145,8 @@ int main(void) {
     
     __delay_ms(3000);
     
+    int i = 0;
+    
     while(1){
         
         switch (state){
@@ -146,12 +167,18 @@ int main(void) {
                 break;
             case Getting_Balls:
                 //Flash the light
-                for(int i=0;i<12;i++){
+                for(i=0;i<numberOfBalls;i++){
                     //flash
+                    _LATA0 = 1;
                     //delay
-                    __delay_us(500000);
+                    __delay_ms(800);
+                    //flash
+                    _LATA0 = 0;
+                    //delay
+                    __delay_ms(800);
                 }
                 //Done after ________ flashes
+                state = Moving_Away_From_Dispencer;
                 break;
             case Moving_Away_From_Dispencer:
                 //Set direction of both base motors
@@ -160,11 +187,16 @@ int main(void) {
                 //Turn on both base motors
                 moveBase();
                 //Done after motor step interrupt
+                setTimer(20000);
                 break;
             case Finding_Goal:
                 //Look at which sensors are on
                 turretSpeedPercent = .8;
-                turretDirection = RotateLeft;
+                if(goal = 0){
+                    turretDirection = Left;
+                }else if(goal = 3){
+                    turretDirection = Right;
+                }
                 //Turn on both base motors
                 moveTurret();
                 break;
@@ -174,6 +206,16 @@ int main(void) {
                 moveLauncher();
                 //Turn on Geniva
                 //Done after timer and no balls?
+                break;
+            case ERROR:
+                //flash
+                _LATA0 = 1;
+                //delay
+                __delay_ms(300);
+                //flash
+                _LATA0 = 0;
+                //delay
+                __delay_ms(300);
                 break;
             default:
                 break;
@@ -228,7 +270,7 @@ void initInterupts(){
     
     // Configure Timer1 using T1CON register
     _TON = 1;       // Turn Timer1 on
-    //_TCKPS = 0b11;  // 1:256 prescaling
+    _TCKPS = 0b11;  // 1:256 prescaling
     _TCS = 0;       // Internal clock source (FOSC/2)
     TMR1 = 0;       // Reset Timer1
     // Configure Timer1 interrupt
@@ -303,9 +345,9 @@ void initAnalogPorts(){
     
     
     //*****************How to read the analog buffer******************
-    //float variable0 = ADC1BUF0;
-    //float variable1 = ADC1BUF1;
-    //float variable2 = ADC1BUF2;
+    //float blackBallInput = ADC1BUF6;
+    //float irInput1 = ADC1BUF7;
+    //float irInput2 = ADC1BUF15;
 }
 
 void initPwmPorts(){
@@ -450,9 +492,9 @@ void moveBase(){
 void moveTurret(){
     OC2R = turretPwmPeriod*turretSpeedPercent;
     switch (turretDirection){
-        case RotateLeft:
+        case Left:
             break;
-        case RotateRight:
+        case Right:
             break;
         default:
             turretSpeedPercent = 0;
@@ -461,4 +503,8 @@ void moveTurret(){
 }
 void moveLauncher(){
     OC3R = launcherPwmPeriod*launcherSpeedPercent;
+}
+void setTimer(int period){
+    PR1 = period; // Timer period
+    TMR1 = 0;       // Reset Timer1
 }
