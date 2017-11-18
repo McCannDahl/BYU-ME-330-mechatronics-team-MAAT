@@ -1,0 +1,49 @@
+/*
+ * File:   newmainXC16.c
+ * Author: mccda
+ *
+ * Created on November 16, 2017, 10:19 PM
+ */
+
+
+#pragma config ICS = PGx3 //this allows debugging.... use PGC/D pair 3 (pins 9,10) for debugging
+#pragma config FNOSC = LPFRC //21kHz
+
+#include "xc.h"
+#define FCY 4000000
+#include <libpic30.h>
+
+
+// Change Notification Interrupt Service Routine (ISR)
+void __attribute__((interrupt, no_auto_psv)) _CNInterrupt(void)
+{
+    _CNIF = 0; // Clear interrupt flag (IFS1 register)
+    
+    _LATA0 = 0;
+    __delay_ms(1200);
+    _LATA0 = 1;
+}
+
+int main(void) {
+    
+    CLKDIVbits.RCDIV = 0b111;
+    
+    TRISAbits.TRISA0 = 0;//Pin 2/RA0: digital output for LED
+    ANSAbits.ANSA0 = 0;//Pin 2/RA0: digital output for LED
+    TRISAbits.TRISA3 = 1;//Pin 8/RA3: Touch sensor(s) input
+    ANSAbits.ANSA3 = 0;//Pin 8/RA3: Touch sensor(s) input
+    
+    // Configure Change Notification interrupt
+    _CN8IE = 1; // Enable CN on pin 8 (CNEN1 register)
+    _CN8PUE = 0; // Disable pull-up resistor (CNPU1 register)
+    _CNIP = 6; // Set CN interrupt priority (IPC4 register)
+    _CNIF = 0; // Clear interrupt flag (IFS1 register)
+    _CNIE = 1; // Enable CN interrupts (IEC1 register)
+    _CNIF = 0; // Clear Change Notification interrupt flag (IFS1 register)
+    
+    _LATA0 = 1;
+    
+    while(1){
+    }
+    return 0;
+}

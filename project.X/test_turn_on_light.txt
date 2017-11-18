@@ -1,0 +1,29 @@
+/*
+ * File:   newmainXC16.c
+ * Author: mccda
+ *
+ * Created on November 16, 2017, 10:19 PM
+ */
+
+
+#pragma config FNOSC = FRC // select 8MHz oscillator with postscaler
+
+#include "xc.h"
+
+
+int main(void) {
+    
+    TRISAbits.TRISA1 = 0;//Pin 2/RA0: digital output for LED
+    ANSAbits.ANSA1 = 0;//Pin 2/RA0: digital output for LED
+    TRISAbits.TRISA0 = 1;//Pin 2/RA0: digital output for LED
+    ANSAbits.ANSA0 = 0;//Pin 2/RA0: digital output for LED
+    
+    while(1){
+        if(_RA0){
+        _LATA1 = 1;  
+        }else{
+        _LATA1 = 0;
+        }
+    }
+    return 0;
+}
