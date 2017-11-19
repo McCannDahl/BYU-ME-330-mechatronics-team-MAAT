@@ -8,13 +8,10 @@
 
 #pragma config ICS = PGx3 //this allows debugging.... use PGC/D pair 3 (pins 9,10) for debugging
 #pragma config FNOSC = FRCDIV // select 8MHz oscillator with postscaler
-#pragma config OSCIOFNC = OFF
-#pragma config SOSCSRC = DIG
+
 #include "xc.h"
 #define FCY 4000000
 #include <libpic30.h>
-
-int state = 0;
 
 int main(void) {
     
@@ -87,12 +84,12 @@ int main(void) {
     OC1CON2 = 0;
    
     // Set period and duty cycle
-    OC1R = 5000;                // Set Output Compare value to achieve
+    OC1R = 0;                // Set Output Compare value to achieve
                                 // desired duty cycle. This is the number
                                 // of timer counts when the OC should send
                                 // the PWM signal low. The duty cycle as a
                                 // fraction is OC1R/OC1RS.
-    OC1RS = 10000;               // Period of OC1 to achieve desired PWM 
+    OC1RS = 3999;               // Period of OC1 to achieve desired PWM 
                                 // frequency, FPWM. See Equation 15-1
                                 // in the datasheet. For example, for
                                 // FPWM = 1 kHz, OC1RS = 3999. The OC1RS 
@@ -123,10 +120,6 @@ int main(void) {
     TRISAbits.TRISA1 = 0;
     _ANSA1 = 0;
     
-    //the toutch
-    TRISAbits.TRISA3 = 1;
-    _ANSA3 = 0;
-    
     TRISAbits.TRISA2 = 0;
     ANSAbits.ANSA2 = 0;
     TRISBbits.TRISB12 = 0;
@@ -137,97 +130,23 @@ int main(void) {
     //pin2 A0 = ir sensor
     //pin3 A1 = light
     //pin7 A2  = sleep
-    //pin8 A3 = toutch
     //pin14 A6 = pwm
     //pin15 B12 = Dir1
     //pin16 B13 = Dir2
-    
-    int i=0;
-    int found_goal = 0;
 
     // Wait and let the PWM do its job behind the scenes
     while(1){
+        _LATA2 = 1;
+        _LATB12 = 1;
+        _LATB13 = 0;
+        _LATA6 = 1;
         
         
         
-        
-        if(state == 0){
+        if(ADC1BUF0>800){
             _LATA2 = 1;
-            _LATB12 = 1;
-            _LATB13 = 0;
-            _LATA6 = 1;
-            
-            
-            if(ADC1BUF0>800){
-                _LATA2 = 0;
-                state = 1;
-                _LATA1 = 1;
-                __delay_ms(1000);
-                _LATA1 = 0;
-                
-                if(found_goal>0){
-                    state = 3;
-                }
-            }else{
-                _LATA2 = 1;
-            }
-        }
-        
-        if(state == 1){
-            found_goal++;
-            _LATA2 = 1;
-            _LATB12 = 1;
-            _LATB13 = 1;
-            _LATA6 = 1;
-            if(_RA3){
-                
-                i = 0;
-                while(i<10000){
-                    OC1R = 50+i*5;
-                    OC1RS = 10000+i*10;
-                    i++;
-                }
-                
-                
-                _LATA2 = 0;
-                state = 2;
-                _LATA1 = 1;
-                __delay_ms(2000);
-                _LATA1 = 0;
-                OC1R = 50;
-                OC1RS = 10000;
-            }
-        }
-        
-        if(state == 2){
-            _LATA2 = 1;
-            _LATB12 = 0;
-            _LATB13 = 0;
-            _LATA6 = 1;
-            __delay_ms(1250);
+        }else{
             _LATA2 = 0;
-            state = 0;
-            
-            
-            _LATA2 = 1;
-            _LATB12 = 1;
-            _LATB13 = 0;
-            _LATA6 = 1;
-            __delay_ms(100);
-            
-        }
-        
-        if(state == 3){
-                i = 0;
-                while(i<12){
-                    _LATA1 = 1;
-                    __delay_ms(500);
-                    _LATA1 = 0;
-                    i++;
-                }
-                
-                    __delay_ms(5000);
-                    state = 0;
         }
         
     }

@@ -17,6 +17,14 @@
       <itemPath>intermediate sudo code.txt</itemPath>
       <itemPath>advanced sudo code.txt</itemPath>
       <itemPath>test_ir.txt</itemPath>
+      <itemPath>test_analog.txt</itemPath>
+      <itemPath>test_touch_sensor_interupt.txt</itemPath>
+      <itemPath>test_toutch_sensor.txt</itemPath>
+      <itemPath>test_motor_directions.txt</itemPath>
+      <itemPath>test_black_ball.txt</itemPath>
+      <itemPath>test_state_looking_for_dispenser.txt</itemPath>
+      <itemPath>test_motor.txt</itemPath>
+      <itemPath>copy of main</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
@@ -24,6 +32,9 @@
       <itemPath>Makefile</itemPath>
     </logicalFolder>
   </logicalFolder>
+  <sourceRootList>
+    <Elem>.</Elem>
+  </sourceRootList>
   <projectmakefile>Makefile</projectmakefile>
   <confs>
     <conf name="default" type="2">
@@ -195,7 +206,6 @@
         <property key="ToolFirmwareOption.UseLatestFirmware" value="true"/>
         <property key="UART 1" value="true"/>
         <property key="UART 2" value="true"/>
-        <property key="firmware.download.all" value="false"/>
         <property key="hwtoolclock.frcindebug" value="false"/>
         <property key="memories.aux" value="false"/>
         <property key="memories.bootflash" value="true"/>

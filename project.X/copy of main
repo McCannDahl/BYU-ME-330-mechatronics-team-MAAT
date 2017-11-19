@@ -112,6 +112,30 @@ int main(void) {
     
     _RCDIV = 0b010; // postscale oscillator (divide-by-4))
     
+    
+    /* PIC 24 PINOUT OLD
+    Pin 1/RA5: --
+    Pin 2/RA0: digital output for LED
+    Pin 3/RA1: digital output for Launch feeder
+    Pin 4/RB0: PWM (Turret motor)
+    Pin 5/RB1: Launch motor digital output/PWM
+    Pin 6/RB2: Analog input for ROS
+    Pin 7/RA2: Analog input for Light sensor 1
+    Pin 8/RA3: Touch sensor(s) input
+    Pin 9/RB4: --
+    Pin 10/RA4: --
+    Pin 11/RB7: --
+    Pin 12/RB8: --
+    Pin 13/RB9: --
+    Pin 14/RA6: PWM for H-Bridge
+    Pin 15/RB12: Analog input for Light sensor 2
+    Pin 16/RB13: Dir 1
+    Pin 17/RB14: Sleep
+    Pin 18/RB15: Dir 2
+    Pin 19/VSS: Vss
+    Pin 20/VDD: Vdd
+     * */
+    
     /* PIC 24 PINOUT
     Pin 1/RA5: --
     Pin 2/RA0: digital output for LED
