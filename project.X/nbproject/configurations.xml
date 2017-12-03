@@ -14,7 +14,6 @@
                    projectFiles="true">
       <itemPath>main.c</itemPath>
       <itemPath>basic sudo code.txt</itemPath>
-      <itemPath>intermediate sudo code.txt</itemPath>
       <itemPath>advanced sudo code.txt</itemPath>
       <itemPath>test_ir.txt</itemPath>
       <itemPath>test_analog.txt</itemPath>
@@ -25,6 +24,10 @@
       <itemPath>test_state_looking_for_dispenser.txt</itemPath>
       <itemPath>test_motor.txt</itemPath>
       <itemPath>copy of main</itemPath>
+      <itemPath>test_all_sensors_on_correct_pins.txt</itemPath>
+      <itemPath>test_all_pwms.txt</itemPath>
+      <itemPath>test_all_sensors_on_full_assembly.txt</itemPath>
+      <itemPath>test_collect_balls.txt</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"

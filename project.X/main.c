@@ -10,13 +10,15 @@
 #pragma config OSCIOFNC = OFF
 #pragma config SOSCSRC = DIG
 
+
 #include "xc.h"
 #define FCY 4000000
 #include <libpic30.h>
 
 //Configurations------------------------------------
 float motorPwmDutyCycle = 2000;
-float turretPwmDutyCycle = 2000;
+float turretPwmPeriod = 20000;
+float turretPwmDutyCycle = 1500;
 float launcherPwmDutyCycle = 2000;
 int numberOfBalls = 6;
 int maxIrSensorAnalogInput = 2048;
@@ -33,7 +35,7 @@ float blackBallInput = 0;
 // Create a set of possible states
 enum {Looking_For_Dispencer, Moving_Tward_Dispencer, Getting_Balls, Moving_Away_From_Dispencer, Finding_Goal, Shooting, ERROR, DEBUG} state;
 enum {Forward, Backward, RotateLeft, RotateRight} baseDirection;
-enum {Left, Right} turretDirection;
+enum {Left, Right, Middle, NotMoving} turretDirection;
 enum {LeftGoal, RightGoal, MiddleGoal} goal;
 
 void initInputOutput();
@@ -46,6 +48,11 @@ void moveTurret();
 void moveLauncher();
 void setTimer();
 void slowDownBase();
+void speedUpBase(float newMotorSpeedPercent);
+void flashLight(float delayMsAmount);
+void stopBase();
+void stopTurret();
+void stopLauncher();
 
 
 // Change Notification Interrupt Service Routine (ISR)
@@ -58,8 +65,10 @@ void __attribute__((interrupt, no_auto_psv)) _CNInterrupt(void)
         case Looking_For_Dispencer:
             break;
         case Moving_Tward_Dispencer:
-            slowDownBase();
-            state = Getting_Balls;
+            if(_RA3){//if the toutch sensor pin is high
+                slowDownBase();
+                state = Getting_Balls;
+            }
             break;
         case Getting_Balls:
             break;
@@ -236,6 +245,8 @@ int main(void) {
                     turretDirection = Left;
                 }else if(goal == RightGoal){
                     turretDirection = Right;
+                }else if(goal == MiddleGoal){
+                    turretDirection = Middle;
                 }
                 //Turn on both base motors
                 moveTurret();
@@ -280,7 +291,7 @@ void initInputOutput(){
     TRISAbits.TRISA0 = 0;//Pin 2/RA0: digital output for LED
     TRISAbits.TRISA1 = 0;//Pin 3/RA1: digital output for Launch feeder
     TRISBbits.TRISB0 = 0;//Pin 4/RB0: PWM (Turret motor)
-    TRISBbits.TRISB1 = 0;//Pin 4/RB0: PWM (Turret motor)
+    TRISBbits.TRISB1 = 0;//Pin 4/RB0: Launch motor digital output/PWM
     TRISBbits.TRISB2 = 1;//Pin 6/RB2: Analog input for ROS
     TRISAbits.TRISA2 = 0;//Pin 7/RA2: Sleep
     TRISAbits.TRISA3 = 1;//Pin 8/RA3: Touch sensor(s) input
@@ -300,7 +311,7 @@ void initDigitalPorts(){
     ANSAbits.ANSA0 = 0;//Pin 2/RA0: digital output for LED
     ANSAbits.ANSA1 = 0;//Pin 3/RA1: digital output for Launch feeder
     ANSBbits.ANSB0 = 0;//Pin 4/RB0: PWM (Turret motor)
-    ANSBbits.ANSB1 = 0;//Pin 4/RB0: PWM (Turret motor)
+    ANSBbits.ANSB1 = 0;//Pin 4/RB0: Launch motor digital output/PWM
     ANSBbits.ANSB2 = 1;//Pin 6/RB2: Analog input for ROS
     ANSAbits.ANSA2 = 0;//Pin 7/RA2: Sleep
     ANSAbits.ANSA3 = 0;//Pin 8/RA3: Touch sensor(s) input
@@ -451,7 +462,7 @@ void initPwmPorts(){
                                 // of timer counts when the OC should send
                                 // the PWM signal low. The duty cycle as a
                                 // fraction is OC1R/OC1RS.
-    OC2RS = turretPwmDutyCycle*2;               // Period of OC1 to achieve desired PWM 
+    OC2RS = turretPwmPeriod;               // Period of OC1 to achieve desired PWM 
                                 // frequency, FPWM. See Equation 15-1
                                 // in the datasheet. For example, for
                                 // FPWM = 1 kHz, OC1RS = 3999. The OC1RS 
@@ -483,7 +494,7 @@ void initPwmPorts(){
     OC3CON2 = 0;
    
     // Set period and duty cycle
-    OC3R = launcherPwmDutyCycle;                // Set Output Compare value to achieve
+    OC3R = launcherPwmDutyCycle*2;                // Set Output Compare value to achieve
                                 // desired duty cycle. This is the number
                                 // of timer counts when the OC should send
                                 // the PWM signal low. The duty cycle as a
@@ -515,8 +526,6 @@ void initPwmPorts(){
 }
 
 void moveBase(){
-    OC1R = motorPwmDutyCycle*(1.0/motorSpeedPercent);
-    OC1RS = motorPwmDutyCycle*(1.0/motorSpeedPercent)*2;
     switch (baseDirection){
         case Forward:
             _LATB13 = 0;
@@ -538,23 +547,60 @@ void moveBase(){
             motorSpeedPercent = 0;
             break;
     }
+    OC1R = motorPwmDutyCycle*(1.0/motorSpeedPercent);
+    OC1RS = motorPwmDutyCycle*(1.0/motorSpeedPercent)*2;
+    _LATA0 = 1;
+}
+void stopBase(){
+    _LATA0 = 0;
+    motorSpeedPercent = 0;
+    OC1R = motorPwmDutyCycle*(1.0/motorSpeedPercent);
+    OC1RS = motorPwmDutyCycle*(1.0/motorSpeedPercent)*2;
 }
 void moveTurret(){
-    OC2R = turretPwmDutyCycle*(1.0/turretSpeedPercent);
-    OC2RS = turretPwmDutyCycle*(1.0/turretSpeedPercent)*2;
     switch (turretDirection){
         case Left:
+            if(turretPwmDutyCycle>1750){
+                turretPwmDutyCycle = turretPwmDutyCycle - 1*turretSpeedPercent;
+            }
+            if(turretPwmDutyCycle<1750){
+                turretPwmDutyCycle = turretPwmDutyCycle + 1*turretSpeedPercent;
+            }
             break;
         case Right:
+            if(turretPwmDutyCycle>1250){
+                turretPwmDutyCycle = turretPwmDutyCycle - 1*turretSpeedPercent;
+            }
+            if(turretPwmDutyCycle<1250){
+                turretPwmDutyCycle = turretPwmDutyCycle + 1*turretSpeedPercent;
+            }
+            break;
+        case Middle:
+            if(turretPwmDutyCycle>1500){
+                turretPwmDutyCycle = turretPwmDutyCycle - 1*turretSpeedPercent;
+            }
+            if(turretPwmDutyCycle<1500){
+                turretPwmDutyCycle = turretPwmDutyCycle + 1*turretSpeedPercent;
+            }
             break;
         default:
-            turretSpeedPercent = 0;
             break;
     }
+    OC2R = turretPwmDutyCycle;
+    OC2RS = turretPwmPeriod;
+    _LATB0 = 1;
+}
+void stopTurret(){
+    turretDirection = NotMoving;
+    _LATB0 = 0;
 }
 void moveLauncher(){
-    OC3R = launcherPwmDutyCycle*(1.0/launcherSpeedPercent);
+    OC3R = launcherPwmDutyCycle*(1.0/launcherSpeedPercent)*2;
     OC3RS = launcherPwmDutyCycle*(1.0/launcherSpeedPercent)*2;
+    _LATB1 = 1;
+}
+void stopLauncher(){
+    _LATB1 = 0;
 }
 void setTimer(int period){
     PR1 = period; // Timer period
@@ -572,4 +618,10 @@ void speedUpBase(float newMotorSpeedPercent){
         moveBase();
     }
     motorSpeedPercent = newMotorSpeedPercent;
+}
+void flashLight(float delayMsAmount){
+    _LATA0 = 1;
+    __delay_ms(delayMsAmount);
+    _LATA0 = 0;
+    __delay_ms(delayMsAmount);
 }

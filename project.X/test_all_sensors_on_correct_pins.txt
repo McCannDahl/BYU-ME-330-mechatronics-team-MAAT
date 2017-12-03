@@ -10,15 +10,13 @@
 #pragma config OSCIOFNC = OFF
 #pragma config SOSCSRC = DIG
 
-
 #include "xc.h"
 #define FCY 4000000
 #include <libpic30.h>
 
 //Configurations------------------------------------
 float motorPwmDutyCycle = 2000;
-float turretPwmPeriod = 20000;
-float turretPwmDutyCycle = 1500;
+float turretPwmDutyCycle = 2000;
 float launcherPwmDutyCycle = 2000;
 int numberOfBalls = 6;
 int maxIrSensorAnalogInput = 2048;
@@ -35,7 +33,7 @@ float blackBallInput = 0;
 // Create a set of possible states
 enum {Looking_For_Dispencer, Moving_Tward_Dispencer, Getting_Balls, Moving_Away_From_Dispencer, Finding_Goal, Shooting, ERROR, DEBUG} state;
 enum {Forward, Backward, RotateLeft, RotateRight} baseDirection;
-enum {Left, Right, Middle, NotMoving} turretDirection;
+enum {Left, Right} turretDirection;
 enum {LeftGoal, RightGoal, MiddleGoal} goal;
 
 void initInputOutput();
@@ -50,9 +48,6 @@ void setTimer();
 void slowDownBase();
 void speedUpBase(float newMotorSpeedPercent);
 void flashLight(float delayMsAmount);
-void stopBase();
-void stopTurret();
-void stopLauncher();
 
 
 // Change Notification Interrupt Service Routine (ISR)
@@ -60,26 +55,8 @@ void __attribute__((interrupt, no_auto_psv)) _CNInterrupt(void)
 {
     _CNIF = 0; // Clear interrupt flag (IFS1 register)
     
-    //CURRENTLY ONLY HANDLING PIN 8 ---> toutch sensors
-    switch (state){
-        case Looking_For_Dispencer:
-            break;
-        case Moving_Tward_Dispencer:
-            if(_RA3){//if the toutch sensor pin is high
-                slowDownBase();
-                state = Getting_Balls;
-            }
-            break;
-        case Getting_Balls:
-            break;
-        case Moving_Away_From_Dispencer:
-            break;
-        case Finding_Goal:
-            break;
-        case Shooting:
-            break;
-        default:
-            break;
+    if(_RA3){
+        flashLight(50);
     }
 }
 
@@ -88,35 +65,7 @@ void __attribute__((interrupt, no_auto_psv)) _T1Interrupt(void)
 {
     _T1IF = 0; // Clear interrupt flag
     
-    switch (state){
-        case Looking_For_Dispencer:
-            break;
-        case Moving_Tward_Dispencer:
-            break;
-        case Getting_Balls:
-            break;
-        case Moving_Away_From_Dispencer:
-            slowDownBase();
-            irInput1 = ADC1BUF10;
-            irInput2 = ADC1BUF9;
-            if(irInput1>irSensorAnalogThreshold){
-                goal = LeftGoal;
-            }
-            else if(irInput2>irSensorAnalogThreshold){
-                goal = MiddleGoal;
-            }
-            else{
-                goal = RightGoal;
-            }
-            state = Finding_Goal;
-            break;
-        case Finding_Goal:
-            break;
-        case Shooting:
-            break;
-        default:
-            break;
-    }
+    flashLight(10);
     
 }
 
@@ -185,101 +134,24 @@ int main(void) {
     
     int i = 0;
     
+    flashLight(100);
+    flashLight(100);
+    flashLight(100);
+    
+    setTimer(20000);
+    
     while(1){
-        
-        switch (state){
-            case Looking_For_Dispencer:
-                //Rotate base to look for IR emitter
-                baseDirection = RotateLeft;
-                speedUpBase(.3);
-                moveBase();
-                //Done when IR receiver emitter interrupts
-                irInput1 = ADC1BUF10;
-                irInput2 = ADC1BUF9;
-                if(irInput1>irSensorAnalogThreshold){
-                    state = Moving_Tward_Dispencer;
-                    slowDownBase();
-                }
-                else if(irInput2>irSensorAnalogThreshold){
-                    __delay_ms(1000);//This is because the robot still has to turn 90 degrees left
-                    state = Moving_Tward_Dispencer;
-                    slowDownBase();
-                }
-                break;
-            case Moving_Tward_Dispencer:
-                //Set direction of both base motors
-                baseDirection = Forward;
-                speedUpBase(.8);
-                //Turn on both base motors
-                moveBase();
-                //Done when both touch sensors interrupt
-                break;
-            case Getting_Balls:
-                //Flash the light
-                for(i=0;i<numberOfBalls;i++){
-                    //flash
-                    _LATA0 = 1;
-                    //delay
-                    __delay_ms(800);
-                    //flash
-                    _LATA0 = 0;
-                    //delay
-                    __delay_ms(800);
-                }
-                //Done after numberOfBalls flashes
-                state = Moving_Away_From_Dispencer;
-                break;
-            case Moving_Away_From_Dispencer:
-                //Set direction of both base motors
-                baseDirection = Backward;
-                speedUpBase(.8);
-                //Turn on both base motors
-                moveBase();
-                //Done after motor step interrupt
-                setTimer(20000);
-                break;
-            case Finding_Goal:
-                //Look at which sensors are on
-                turretSpeedPercent = .8;
-                if(goal == LeftGoal){
-                    turretDirection = Left;
-                }else if(goal == RightGoal){
-                    turretDirection = Right;
-                }else if(goal == MiddleGoal){
-                    turretDirection = Middle;
-                }
-                //Turn on both base motors
-                moveTurret();
-                break;
-            case Shooting:
-                //Turn on shooting motors
-                launcherSpeedPercent = .8;
-                moveLauncher();
-                //Turn on Geniva
-                //Done after timer and no balls?
-                break;
-            case ERROR:
-                //flash
-                _LATA0 = 1;
-                //delay
-                __delay_ms(300);
-                //flash
-                _LATA0 = 0;
-                //delay
-                __delay_ms(300);
-                break;
-            case DEBUG:
-                //flash
-                _LATA0 = 1;
-                //delay
-                __delay_ms(500);
-                //flash
-                _LATA0 = 0;
-                //delay
-                __delay_ms(500);
-                break;
-            default:
-                break;
+        blackBallInput = ADC1BUF4;
+        irInput1 = ADC1BUF10;
+        irInput2 = ADC1BUF9;
+        if(irInput1>irSensorAnalogThreshold){
+            flashLight(100);
+        }
+        if(irInput2>irSensorAnalogThreshold){
+            flashLight(100);
+        }
+        if(blackBallInput>irSensorAnalogThreshold){
+            flashLight(100);
         }
     
     }
@@ -291,7 +163,7 @@ void initInputOutput(){
     TRISAbits.TRISA0 = 0;//Pin 2/RA0: digital output for LED
     TRISAbits.TRISA1 = 0;//Pin 3/RA1: digital output for Launch feeder
     TRISBbits.TRISB0 = 0;//Pin 4/RB0: PWM (Turret motor)
-    TRISBbits.TRISB1 = 0;//Pin 4/RB0: Launch motor digital output/PWM
+    TRISBbits.TRISB1 = 0;//Pin 4/RB0: PWM (Turret motor)
     TRISBbits.TRISB2 = 1;//Pin 6/RB2: Analog input for ROS
     TRISAbits.TRISA2 = 0;//Pin 7/RA2: Sleep
     TRISAbits.TRISA3 = 1;//Pin 8/RA3: Touch sensor(s) input
@@ -311,7 +183,7 @@ void initDigitalPorts(){
     ANSAbits.ANSA0 = 0;//Pin 2/RA0: digital output for LED
     ANSAbits.ANSA1 = 0;//Pin 3/RA1: digital output for Launch feeder
     ANSBbits.ANSB0 = 0;//Pin 4/RB0: PWM (Turret motor)
-    ANSBbits.ANSB1 = 0;//Pin 4/RB0: Launch motor digital output/PWM
+    ANSBbits.ANSB1 = 0;//Pin 4/RB0: PWM (Turret motor)
     ANSBbits.ANSB2 = 1;//Pin 6/RB2: Analog input for ROS
     ANSAbits.ANSA2 = 0;//Pin 7/RA2: Sleep
     ANSAbits.ANSA3 = 0;//Pin 8/RA3: Touch sensor(s) input
@@ -462,7 +334,7 @@ void initPwmPorts(){
                                 // of timer counts when the OC should send
                                 // the PWM signal low. The duty cycle as a
                                 // fraction is OC1R/OC1RS.
-    OC2RS = turretPwmPeriod;               // Period of OC1 to achieve desired PWM 
+    OC2RS = turretPwmDutyCycle*2;               // Period of OC1 to achieve desired PWM 
                                 // frequency, FPWM. See Equation 15-1
                                 // in the datasheet. For example, for
                                 // FPWM = 1 kHz, OC1RS = 3999. The OC1RS 
@@ -494,7 +366,7 @@ void initPwmPorts(){
     OC3CON2 = 0;
    
     // Set period and duty cycle
-    OC3R = launcherPwmDutyCycle*2;                // Set Output Compare value to achieve
+    OC3R = launcherPwmDutyCycle;                // Set Output Compare value to achieve
                                 // desired duty cycle. This is the number
                                 // of timer counts when the OC should send
                                 // the PWM signal low. The duty cycle as a
@@ -526,6 +398,8 @@ void initPwmPorts(){
 }
 
 void moveBase(){
+    OC1R = motorPwmDutyCycle*(1.0/motorSpeedPercent);
+    OC1RS = motorPwmDutyCycle*(1.0/motorSpeedPercent)*2;
     switch (baseDirection){
         case Forward:
             _LATB13 = 0;
@@ -547,60 +421,23 @@ void moveBase(){
             motorSpeedPercent = 0;
             break;
     }
-    OC1R = motorPwmDutyCycle*(1.0/motorSpeedPercent);
-    OC1RS = motorPwmDutyCycle*(1.0/motorSpeedPercent)*2;
-    _LATA0 = 1;
-}
-void stopBase(){
-    _LATA0 = 0;
-    motorSpeedPercent = 0;
-    OC1R = motorPwmDutyCycle*(1.0/motorSpeedPercent);
-    OC1RS = motorPwmDutyCycle*(1.0/motorSpeedPercent)*2;
 }
 void moveTurret(){
+    OC2R = turretPwmDutyCycle*(1.0/turretSpeedPercent);
+    OC2RS = turretPwmDutyCycle*(1.0/turretSpeedPercent)*2;
     switch (turretDirection){
         case Left:
-            if(turretPwmDutyCycle>1750){
-                turretPwmDutyCycle = turretPwmDutyCycle - 1*turretSpeedPercent;
-            }
-            if(turretPwmDutyCycle<1750){
-                turretPwmDutyCycle = turretPwmDutyCycle + 1*turretSpeedPercent;
-            }
             break;
         case Right:
-            if(turretPwmDutyCycle>1250){
-                turretPwmDutyCycle = turretPwmDutyCycle - 1*turretSpeedPercent;
-            }
-            if(turretPwmDutyCycle<1250){
-                turretPwmDutyCycle = turretPwmDutyCycle + 1*turretSpeedPercent;
-            }
-            break;
-        case Middle:
-            if(turretPwmDutyCycle>1500){
-                turretPwmDutyCycle = turretPwmDutyCycle - 1*turretSpeedPercent;
-            }
-            if(turretPwmDutyCycle<1500){
-                turretPwmDutyCycle = turretPwmDutyCycle + 1*turretSpeedPercent;
-            }
             break;
         default:
+            turretSpeedPercent = 0;
             break;
     }
-    OC2R = turretPwmDutyCycle;
-    OC2RS = turretPwmPeriod;
-    _LATB0 = 1;
-}
-void stopTurret(){
-    turretDirection = NotMoving;
-    _LATB0 = 0;
 }
 void moveLauncher(){
-    OC3R = launcherPwmDutyCycle*(1.0/launcherSpeedPercent)*2;
+    OC3R = launcherPwmDutyCycle*(1.0/launcherSpeedPercent);
     OC3RS = launcherPwmDutyCycle*(1.0/launcherSpeedPercent)*2;
-    _LATB1 = 1;
-}
-void stopLauncher(){
-    _LATB1 = 0;
 }
 void setTimer(int period){
     PR1 = period; // Timer period
