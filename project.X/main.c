@@ -20,7 +20,7 @@ float motorPwmDutyCycle = 2000;
 float turretPwmPeriod = 20000;
 float turretPwmDutyCycle = 1500;
 float launcherPwmDutyCycle = 2000;
-int numberOfBalls = 6;
+int numberOfBalls = 11;
 int maxIrSensorAnalogInput = 2048;
 int irSensorAnalogThreshold = 800;
 //--------------------------------------------------
@@ -109,10 +109,13 @@ void __attribute__((interrupt, no_auto_psv)) _T1Interrupt(void)
                 goal = RightGoal;
             }
             state = Finding_Goal;
+            state = ERROR;
             break;
         case Finding_Goal:
+            state = Shooting;
             break;
         case Shooting:
+            state = Moving_Tward_Dispencer;
             break;
         default:
             break;
@@ -181,7 +184,10 @@ int main(void) {
 
     state = Looking_For_Dispencer;
     
-    __delay_ms(1000);
+    
+            flashLight(200);
+            flashLight(200);
+            flashLight(200);
     
     int i = 0;
     
@@ -191,56 +197,65 @@ int main(void) {
             case Looking_For_Dispencer:
                 //Rotate base to look for IR emitter
                 baseDirection = RotateLeft;
-                speedUpBase(.3);
+                speedUpBase(.6);
                 moveBase();
                 //Done when IR receiver emitter interrupts
                 irInput1 = ADC1BUF10;
                 irInput2 = ADC1BUF9;
                 if(irInput1>irSensorAnalogThreshold){
+                    flashLight(100);
+                    
+                    __delay_ms(300);//This is because the robot still has to turn 90 degrees left
+                    
                     state = Moving_Tward_Dispencer;
-                    slowDownBase();
+                    stopBase();
+                    //slowDownBase();
                 }
                 else if(irInput2>irSensorAnalogThreshold){
-                    __delay_ms(1000);//This is because the robot still has to turn 90 degrees left
+                    __delay_ms(300);//This is because the robot still has to turn 90 degrees left
                     state = Moving_Tward_Dispencer;
-                    slowDownBase();
+                    stopBase();
+                    //slowDownBase();
                 }
                 break;
             case Moving_Tward_Dispencer:
                 //Set direction of both base motors
-                baseDirection = Forward;
+                baseDirection = Backward;
                 speedUpBase(.8);
                 //Turn on both base motors
                 moveBase();
                 //Done when both touch sensors interrupt
                 break;
             case Getting_Balls:
+                stopBase();
                 //Flash the light
                 for(i=0;i<numberOfBalls;i++){
                     //flash
                     _LATA0 = 1;
                     //delay
-                    __delay_ms(800);
+                    __delay_ms(60);
                     //flash
                     _LATA0 = 0;
                     //delay
-                    __delay_ms(800);
+                    __delay_ms(60);
                 }
                 //Done after numberOfBalls flashes
                 state = Moving_Away_From_Dispencer;
+                setTimer(10000);
                 break;
             case Moving_Away_From_Dispencer:
                 //Set direction of both base motors
-                baseDirection = Backward;
+                baseDirection = Forward;
                 speedUpBase(.8);
                 //Turn on both base motors
                 moveBase();
-                //Done after motor step interrupt
-                setTimer(20000);
+                //Done after timer/motor step interrupt
+                //setTimer(5000);
                 break;
             case Finding_Goal:
+                state = Looking_For_Dispencer;
                 //Look at which sensors are on
-                turretSpeedPercent = .8;
+                /*turretSpeedPercent = .8;
                 if(goal == LeftGoal){
                     turretDirection = Left;
                 }else if(goal == RightGoal){
@@ -249,7 +264,7 @@ int main(void) {
                     turretDirection = Middle;
                 }
                 //Turn on both base motors
-                moveTurret();
+                moveTurret();*/
                 break;
             case Shooting:
                 //Turn on shooting motors
@@ -257,16 +272,17 @@ int main(void) {
                 moveLauncher();
                 //Turn on Geniva
                 //Done after timer and no balls?
+                setTimer(5000);
                 break;
             case ERROR:
                 //flash
                 _LATA0 = 1;
                 //delay
-                __delay_ms(300);
+                __delay_ms(10);
                 //flash
                 _LATA0 = 0;
                 //delay
-                __delay_ms(300);
+                __delay_ms(10);
                 break;
             case DEBUG:
                 //flash
@@ -529,19 +545,19 @@ void moveBase(){
     switch (baseDirection){
         case Forward:
             _LATB13 = 0;
-            _LATB15 = 0;
+            _LATB12 = 0;
             break;
         case Backward:
             _LATB13 = 1;
-            _LATB15 = 1;
+            _LATB12 = 1;
             break;
         case RotateLeft:
             _LATB13 = 1;
-            _LATB15 = 0;
+            _LATB12 = 0;
             break;
         case RotateRight:
             _LATB13 = 0;
-            _LATB15 = 1;
+            _LATB12 = 0;
             break;
         default:
             motorSpeedPercent = 0;
@@ -550,9 +566,11 @@ void moveBase(){
     OC1R = motorPwmDutyCycle*(1.0/motorSpeedPercent);
     OC1RS = motorPwmDutyCycle*(1.0/motorSpeedPercent)*2;
     _LATA0 = 1;
+    _LATA2 = 1;
 }
 void stopBase(){
     _LATA0 = 0;
+    _LATA2 = 0;
     motorSpeedPercent = 0;
     OC1R = motorPwmDutyCycle*(1.0/motorSpeedPercent);
     OC1RS = motorPwmDutyCycle*(1.0/motorSpeedPercent)*2;
@@ -613,10 +631,10 @@ void slowDownBase(){
     }
 }
 void speedUpBase(float newMotorSpeedPercent){
-    while(motorSpeedPercent<newMotorSpeedPercent){
-        motorSpeedPercent += .01;
-        moveBase();
-    }
+    //while(motorSpeedPercent<newMotorSpeedPercent){
+    //    motorSpeedPercent += .01;
+    //    moveBase();
+   // }
     motorSpeedPercent = newMotorSpeedPercent;
 }
 void flashLight(float delayMsAmount){
