@@ -631,10 +631,10 @@ void slowDownBase(){
     }
 }
 void speedUpBase(float newMotorSpeedPercent){
-    //while(motorSpeedPercent<newMotorSpeedPercent){
-    //    motorSpeedPercent += .01;
-    //    moveBase();
-   // }
+    while(motorSpeedPercent<newMotorSpeedPercent){
+        motorSpeedPercent += .01;
+        moveBase();
+    }
     motorSpeedPercent = newMotorSpeedPercent;
 }
 void flashLight(float delayMsAmount){
