@@ -185,119 +185,31 @@ int main(void) {
     state = Looking_For_Dispencer;
     
     
-            flashLight(200);
-            flashLight(200);
-            flashLight(200);
+            flashLight(100);
+            flashLight(100);
+            flashLight(100);
     
     int i = 0;
     
     while(1){
         
-        switch (state){
-            case Looking_For_Dispencer:
-                //Rotate base to look for IR emitter
-                baseDirection = RotateLeft;
-                speedUpBase(.6);
-                moveBase();
-                //Done when IR receiver emitter interrupts
-                irInput1 = ADC1BUF10;
-                irInput2 = ADC1BUF9;
-                if(irInput1>irSensorAnalogThreshold){
-                    flashLight(100);
-                    
-                    __delay_ms(300);//This is because the robot still has to turn 90 degrees left
-                    
-                    state = Moving_Tward_Dispencer;
-                    stopBase();
-                    //slowDownBase();
-                }
-                else if(irInput2>irSensorAnalogThreshold){
-                    __delay_ms(300);//This is because the robot still has to turn 90 degrees left
-                    state = Moving_Tward_Dispencer;
-                    stopBase();
-                    //slowDownBase();
-                }
-                break;
-            case Moving_Tward_Dispencer:
-                //Set direction of both base motors
-                baseDirection = Backward;
-                speedUpBase(.8);
-                //Turn on both base motors
-                moveBase();
-                //Done when both touch sensors interrupt
-                break;
-            case Getting_Balls:
-                stopBase();
-                //Flash the light
-                for(i=0;i<numberOfBalls;i++){
-                    //flash
-                    _LATA0 = 1;
-                    //delay
-                    __delay_ms(60);
-                    //flash
-                    _LATA0 = 0;
-                    //delay
-                    __delay_ms(60);
-                }
-                //Done after numberOfBalls flashes
-                state = Moving_Away_From_Dispencer;
-                setTimer(10000);
-                break;
-            case Moving_Away_From_Dispencer:
-                //Set direction of both base motors
-                baseDirection = Forward;
-                speedUpBase(.8);
-                //Turn on both base motors
-                moveBase();
-                //Done after timer/motor step interrupt
-                //setTimer(5000);
-                break;
-            case Finding_Goal:
-                state = Looking_For_Dispencer;
-                //Look at which sensors are on
-                /*turretSpeedPercent = .8;
-                if(goal == LeftGoal){
-                    turretDirection = Left;
-                }else if(goal == RightGoal){
-                    turretDirection = Right;
-                }else if(goal == MiddleGoal){
-                    turretDirection = Middle;
-                }
-                //Turn on both base motors
-                moveTurret();*/
-                break;
-            case Shooting:
-                //Turn on shooting motors
-                launcherSpeedPercent = .8;
-                moveLauncher();
-                //Turn on Geniva
-                //Done after timer and no balls?
-                setTimer(5000);
-                break;
-            case ERROR:
-                //flash
-                _LATA0 = 1;
-                //delay
-                __delay_ms(10);
-                //flash
-                _LATA0 = 0;
-                //delay
-                __delay_ms(10);
-                break;
-            case DEBUG:
-                //flash
-                _LATA0 = 1;
-                //delay
-                __delay_ms(500);
-                //flash
-                _LATA0 = 0;
-                //delay
-                __delay_ms(500);
-                break;
-            default:
-                break;
+        
+        blackBallInput = ADC1BUF4;
+        if(blackBallInput>800){
+            _LATA0 = 1;
+            _LATA1 = 0;
+            _LATA2 = 0;
         }
-    
+        else if(blackBallInput<400){
+            _LATA0 = 0;
+            _LATA1 = 1;
+            _LATA2 = 0;
+        }
+        else{
+            _LATA0 = 0;
+            _LATA1 = 0;
+            _LATA2 = 1;
+        }
     }
     
     return 0;
@@ -639,7 +551,11 @@ void speedUpBase(float newMotorSpeedPercent){
 }
 void flashLight(float delayMsAmount){
     _LATA0 = 1;
+    _LATA1 = 1;
+    _LATA2 = 1;
     __delay_ms(delayMsAmount);
     _LATA0 = 0;
+    _LATA1 = 0;
+    _LATA2 = 0;
     __delay_ms(delayMsAmount);
 }

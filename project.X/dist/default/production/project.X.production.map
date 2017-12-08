@@ -98,11 +98,11 @@ Program Memory  [Origin = 0x200, Length = 0x2a00]
 section                    address   length (PC units)   length (bytes) (dec)
 -------                    -------   -----------------   --------------------
 .text                        0x200               0x7fa           0xbf7  (3063)
-.text                        0x9fa               0x5a8           0x87c  (2172)
-.dinit                       0xfa2                0x1e            0x2d  (45)
-.init.delay32                0xfc0                0x1c            0x2a  (42)
+.text                        0x9fa               0x504           0x786  (1926)
+.dinit                       0xefe                0x1e            0x2d  (45)
+.init.delay32                0xf1c                0x1c            0x2a  (42)
 
-                 Total program memory used (bytes):         0x14ca  (5322) 32%
+                 Total program memory used (bytes):         0x13d4  (5076) 31%
 
 
 Ivt Memory  [Origin = 0x4, Length = 0xfc]
@@ -212,22 +212,22 @@ External Symbols in Program Memory (by address):
                   0x000958                  ___floatundisf
                   0x0009b6                  ___umuldi3
                   0x0009fa                  _main
-                  0x000b4e                  _initInputOutput
-                  0x000b6c                  _initDigitalPorts
-                  0x000b8a                  _initInterupts
-                  0x000bc8                  _initAnalogPorts
-                  0x000c14                  _initPwmPorts
-                  0x000cbc                  _moveBase
-                  0x000d3a                  _stopBase
-                  0x000d8a                  _moveTurret
-                  0x000eba                  _stopTurret
-                  0x000ec6                  _moveLauncher
-                  0x000f12                  _stopLauncher
-                  0x000f1a                  _setTimer
-                  0x000f28                  _slowDownBase
-                  0x000f58                  _speedUpBase
-                  0x000f66                  _flashLight
-                  0x000fc0                  ___delay32
+                  0x000a78                  _initInputOutput
+                  0x000a96                  _initDigitalPorts
+                  0x000ab4                  _initInterupts
+                  0x000af2                  _initAnalogPorts
+                  0x000b3e                  _initPwmPorts
+                  0x000be6                  _moveBase
+                  0x000c64                  _stopBase
+                  0x000cb4                  _moveTurret
+                  0x000de4                  _stopTurret
+                  0x000df0                  _moveLauncher
+                  0x000e3c                  _stopLauncher
+                  0x000e44                  _setTimer
+                  0x000e52                  _slowDownBase
+                  0x000e82                  _speedUpBase
+                  0x000eba                  _flashLight
+                  0x000f1c                  ___delay32
 
 External Symbols in Program Memory (by name):
 
@@ -235,7 +235,7 @@ External Symbols in Program Memory (by name):
                   0x0003ce                  __DefaultInterrupt
                   0x000318                  __T1Interrupt
                   0x0003d6                  ___addsf3
-                  0x000fc0                  ___delay32
+                  0x000f1c                  ___delay32
                   0x0007f4                  ___divdi3
                   0x000490                  ___divsf3
                   0x000514                  ___eqsf2
@@ -268,22 +268,22 @@ External Symbols in Program Memory (by name):
                   0x000614                  __funpack2
                   0x00023c                  __psv_init
                   0x000200                  __resetPRI
-                  0x000f66                  _flashLight
-                  0x000bc8                  _initAnalogPorts
-                  0x000b6c                  _initDigitalPorts
-                  0x000b4e                  _initInputOutput
-                  0x000b8a                  _initInterupts
-                  0x000c14                  _initPwmPorts
+                  0x000eba                  _flashLight
+                  0x000af2                  _initAnalogPorts
+                  0x000a96                  _initDigitalPorts
+                  0x000a78                  _initInputOutput
+                  0x000ab4                  _initInterupts
+                  0x000b3e                  _initPwmPorts
                   0x0009fa                  _main
-                  0x000cbc                  _moveBase
-                  0x000ec6                  _moveLauncher
-                  0x000d8a                  _moveTurret
-                  0x000f1a                  _setTimer
-                  0x000f28                  _slowDownBase
-                  0x000f58                  _speedUpBase
-                  0x000d3a                  _stopBase
-                  0x000f12                  _stopLauncher
-                  0x000eba                  _stopTurret
+                  0x000be6                  _moveBase
+                  0x000df0                  _moveLauncher
+                  0x000cb4                  _moveTurret
+                  0x000e44                  _setTimer
+                  0x000e52                  _slowDownBase
+                  0x000e82                  _speedUpBase
+                  0x000c64                  _stopBase
+                  0x000e3c                  _stopLauncher
+                  0x000de4                  _stopTurret
 
 Memory Configuration
 
@@ -464,26 +464,26 @@ __FDS
 .comment
  *(.comment)
 
-.debug_info       0x000000       0x300a
+.debug_info       0x000000       0x3023
  *(.debug_info)
- .debug_info      0x000000       0x300a build/default/production/main.o
+ .debug_info      0x000000       0x3023 build/default/production/main.o
  *(.gnu.linkonce.wi.*)
 
-.debug_abbrev     0x000000        0x1b9
+.debug_abbrev     0x000000        0x1cc
  *(.debug_abbrev)
- .debug_abbrev    0x000000        0x1b9 build/default/production/main.o
+ .debug_abbrev    0x000000        0x1cc build/default/production/main.o
 
-.debug_line       0x000000        0x1f6
+.debug_line       0x000000        0x1d0
  *(.debug_line)
- .debug_line      0x000000        0x1f6 build/default/production/main.o
+ .debug_line      0x000000        0x1d0 build/default/production/main.o
 
-.debug_frame      0x000000        0x26e
+.debug_frame      0x000000        0x274
  *(.debug_frame)
- .debug_frame     0x000000        0x26e build/default/production/main.o
+ .debug_frame     0x000000        0x274 build/default/production/main.o
 
-.debug_str        0x000000        0x2c3
+.debug_str        0x000000        0x2cd
  *(.debug_str)
- .debug_str       0x000000        0x2c3 build/default/production/main.o
+ .debug_str       0x000000        0x2cd build/default/production/main.o
 
 .debug_loc
  *(.debug_loc)
@@ -1218,28 +1218,28 @@ __c30_signature
  .ivt._T1Interrupt
                   0x00001a          0x2 build/default/production/main.o
 
-.text             0x0009fa        0x5a8
- .text            0x0009fa        0x5a8 build/default/production/main.o
+.text             0x0009fa        0x504
+ .text            0x0009fa        0x504 build/default/production/main.o
                   0x0009fa                  _main
-                  0x000b4e                  _initInputOutput
-                  0x000b6c                  _initDigitalPorts
-                  0x000b8a                  _initInterupts
-                  0x000bc8                  _initAnalogPorts
-                  0x000c14                  _initPwmPorts
-                  0x000cbc                  _moveBase
-                  0x000d3a                  _stopBase
-                  0x000d8a                  _moveTurret
-                  0x000eba                  _stopTurret
-                  0x000ec6                  _moveLauncher
-                  0x000f12                  _stopLauncher
-                  0x000f1a                  _setTimer
-                  0x000f28                  _slowDownBase
-                  0x000f58                  _speedUpBase
-                  0x000f66                  _flashLight
+                  0x000a78                  _initInputOutput
+                  0x000a96                  _initDigitalPorts
+                  0x000ab4                  _initInterupts
+                  0x000af2                  _initAnalogPorts
+                  0x000b3e                  _initPwmPorts
+                  0x000be6                  _moveBase
+                  0x000c64                  _stopBase
+                  0x000cb4                  _moveTurret
+                  0x000de4                  _stopTurret
+                  0x000df0                  _moveLauncher
+                  0x000e3c                  _stopLauncher
+                  0x000e44                  _setTimer
+                  0x000e52                  _slowDownBase
+                  0x000e82                  _speedUpBase
+                  0x000eba                  _flashLight
 
-.dinit            0x000fa2         0x1e
- .dinit           0x000fa2         0x1e data_init
+.dinit            0x000efe         0x1e
+ .dinit           0x000efe         0x1e data_init
 
-.init.delay32     0x000fc0         0x1c
- .init.delay32    0x000fc0         0x1c c:/program files (x86)/microchip/xc16/v1.32/bin/bin/../../lib\liblega-pic30-elf.a(delay32.Leo)
-                  0x000fc0                  ___delay32
+.init.delay32     0x000f1c         0x1c
+ .init.delay32    0x000f1c         0x1c c:/program files (x86)/microchip/xc16/v1.32/bin/bin/../../lib\liblega-pic30-elf.a(delay32.Leo)
+                  0x000f1c                  ___delay32

@@ -28,6 +28,7 @@
       <itemPath>test_all_pwms.txt</itemPath>
       <itemPath>test_all_sensors_on_full_assembly.txt</itemPath>
       <itemPath>test_collect_balls.txt</itemPath>
+      <itemPath>test_back_ball_2.txt</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
