@@ -9,6 +9,7 @@
 #pragma config FNOSC = FRCDIV // select 8MHz oscillator with postscaler
 #pragma config OSCIOFNC = OFF
 #pragma config SOSCSRC = DIG
+#pragma config FWDTEN = OFF             // Watchdog Timer Enable bits (WDT disabled in hardware; SWDTEN bit disabled)
 
 
 #include "xc.h"
@@ -25,9 +26,9 @@ int maxIrSensorAnalogInput = 2048;
 int irSensorAnalogThreshold = 800;
 //--------------------------------------------------
 
-float motorSpeedPercent = 0;
-float turretSpeedPercent = 0;
-float launcherSpeedPercent = 0;
+float motorSpeedPercent = .00001;
+float turretSpeedPercent = .000001;
+float launcherSpeedPercent = .00001;
 float irInput1 = 0;
 float irInput2 = 0;
 float blackBallInput = 0;
@@ -109,10 +110,11 @@ void __attribute__((interrupt, no_auto_psv)) _T1Interrupt(void)
                 goal = RightGoal;
             }
             state = Finding_Goal;
-            state = ERROR;
+            setTimer(5000);
             break;
         case Finding_Goal:
             state = Shooting;
+            setTimer(50000);
             break;
         case Shooting:
             state = Moving_Tward_Dispencer;
@@ -185,9 +187,9 @@ int main(void) {
     state = Looking_For_Dispencer;
     
     
-            flashLight(200);
-            flashLight(200);
-            flashLight(200);
+            flashLight(100);
+            flashLight(100);
+            flashLight(100);
     
     int i = 0;
     
@@ -195,9 +197,10 @@ int main(void) {
         
         switch (state){
             case Looking_For_Dispencer:
+                stopLauncher();
                 //Rotate base to look for IR emitter
                 baseDirection = RotateLeft;
-                speedUpBase(.6);
+                speedUpBase(.7);
                 moveBase();
                 //Done when IR receiver emitter interrupts
                 irInput1 = ADC1BUF10;
@@ -209,17 +212,16 @@ int main(void) {
                     
                     state = Moving_Tward_Dispencer;
                     slowDownBase();
-                    //slowDownBase();
                 }
-                else if(irInput2>irSensorAnalogThreshold
-                    //flashLight(100);
-                    //__delay_ms(400);//This is because the robot still has to turn 90 degrees left
-                    //state = Moving_Tward_Dispencer;
-                    //slowDownBase();
-                    //slowDownBase();
+                else if(irInput2>irSensorAnalogThreshold){
+                    flashLight(100);
+                    __delay_ms(300);//This is because the robot still has to turn 90 degrees left
+                    state = Moving_Tward_Dispencer;
+                    slowDownBase();
                 }
                 break;
             case Moving_Tward_Dispencer:
+                stopLauncher();
                 //Set direction of both base motors
                 baseDirection = Backward;
                 speedUpBase(.8);
@@ -254,26 +256,14 @@ int main(void) {
                 //setTimer(5000);
                 break;
             case Finding_Goal:
-                state = Looking_For_Dispencer;
-                //Look at which sensors are on
-                /*turretSpeedPercent = .8;
-                if(goal == LeftGoal){
-                    turretDirection = Left;
-                }else if(goal == RightGoal){
-                    turretDirection = Right;
-                }else if(goal == MiddleGoal){
-                    turretDirection = Middle;
-                }
-                //Turn on both base motors
-                moveTurret();*/
+                moveTurret();
                 break;
             case Shooting:
                 //Turn on shooting motors
-                launcherSpeedPercent = .8;
+                launcherSpeedPercent = .7;
                 moveLauncher();
                 //Turn on Geniva
                 //Done after timer and no balls?
-                setTimer(5000);
                 break;
             case ERROR:
                 //flash
@@ -511,17 +501,9 @@ void initPwmPorts(){
     OC3CON2 = 0;
    
     // Set period and duty cycle
-    OC3R = launcherPwmDutyCycle*2;                // Set Output Compare value to achieve
-                                // desired duty cycle. This is the number
-                                // of timer counts when the OC should send
-                                // the PWM signal low. The duty cycle as a
-                                // fraction is OC1R/OC1RS.
-    OC3RS = launcherPwmDutyCycle*2;               // Period of OC1 to achieve desired PWM 
-                                // frequency, FPWM. See Equation 15-1
-                                // in the datasheet. For example, for
-                                // FPWM = 1 kHz, OC1RS = 3999. The OC1RS 
-                                // register contains the period when the
-                                // SYNCSEL bits are set to 0x1F (see FRM)
+    
+    OC3R = 0;
+    OC3RS = launcherPwmDutyCycle*(1.0/launcherSpeedPercent)*2;
     
     // Configure OC1
     OC3CON1bits.OCTSEL = 0b111; // System (peripheral) clock as timing source
@@ -561,7 +543,7 @@ void moveBase(){
             _LATB12 = 0;
             break;
         default:
-            motorSpeedPercent = 0;
+            motorSpeedPercent = .000001;
             break;
     }
     OC1R = motorPwmDutyCycle*(1.0/motorSpeedPercent);
@@ -572,7 +554,7 @@ void moveBase(){
 void stopBase(){
     _LATA0 = 0;
     _LATA2 = 0;
-    motorSpeedPercent = 0;
+    motorSpeedPercent = .000001;
     OC1R = motorPwmDutyCycle*(1.0/motorSpeedPercent);
     OC1RS = motorPwmDutyCycle*(1.0/motorSpeedPercent)*2;
 }
@@ -614,12 +596,15 @@ void stopTurret(){
     _LATB0 = 0;
 }
 void moveLauncher(){
-    OC3R = launcherPwmDutyCycle*(1.0/launcherSpeedPercent)*2;
+    OC3R = launcherPwmDutyCycle*(1.0/launcherSpeedPercent);
     OC3RS = launcherPwmDutyCycle*(1.0/launcherSpeedPercent)*2;
     _LATB1 = 1;
 }
 void stopLauncher(){
     _LATB1 = 0;
+    launcherSpeedPercent = .00000001;
+    OC3R = 0;
+    OC3RS = launcherPwmDutyCycle*(1.0/launcherSpeedPercent)*2;
 }
 void setTimer(int period){
     PR1 = period; // Timer period
@@ -627,7 +612,7 @@ void setTimer(int period){
 }
 void slowDownBase(){
     while(motorSpeedPercent>0){
-        motorSpeedPercent -= .01;
+        motorSpeedPercent -= .04;
         moveBase();
     }
 }

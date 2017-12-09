@@ -60,6 +60,9 @@ void stopLauncher();
 void __attribute__((interrupt, no_auto_psv)) _CNInterrupt(void)
 {
     _CNIF = 0; // Clear interrupt flag (IFS1 register)
+            if(_RA3){
+                   flashLight(100);
+            }
     
     //CURRENTLY ONLY HANDLING PIN 8 ---> toutch sensors
     switch (state){
@@ -194,24 +197,16 @@ int main(void) {
     int i = 0;
     
     while(1){
-        
-            irInput1 = ADC1BUF10;
-            irInput2 = ADC1BUF9;
-            if(irInput1>irSensorAnalogThreshold){
-                goal = LeftGoal;
-                turretDirection = Left;
-            }
-            else if(irInput2>irSensorAnalogThreshold){
-                goal = MiddleGoal;
-                turretDirection = Right;
-            }
-            else{
-                goal = RightGoal;
-                turretDirection = Middle;
-            }
-                moveTurret();
-        
-                
+        //Done when IR receiver emitter interrupts
+                irInput1 = ADC1BUF10;
+                irInput2 = ADC1BUF9;
+                if(irInput1>irSensorAnalogThreshold){
+                    flashLight(100);
+                }
+                else if(irInput2>irSensorAnalogThreshold){
+                    flashLight(100);
+                }
+    
     }
     
     return 0;
@@ -425,8 +420,8 @@ void initPwmPorts(){
    
     // Set period and duty cycle
     
-    OC3R = 0;
-    OC3RS = launcherPwmDutyCycle*(1.0/launcherSpeedPercent)*2;
+    OC3R = 0;//launcherPwmDutyCycle*(1.0/launcherSpeedPercent);
+    OC3RS = launcherPwmDutyCycle;//launcherPwmDutyCycle*(1.0/launcherSpeedPercent)*2;
     
     // Configure OC1
     OC3CON1bits.OCTSEL = 0b111; // System (peripheral) clock as timing source
@@ -526,7 +521,7 @@ void moveLauncher(){
 void stopLauncher(){
     _LATB1 = 0;
     launcherSpeedPercent = .00000001;
-    OC3R = 0;
+    OC3R = launcherPwmDutyCycle*(1.0/launcherSpeedPercent);
     OC3RS = launcherPwmDutyCycle*(1.0/launcherSpeedPercent)*2;
 }
 void setTimer(int period){
