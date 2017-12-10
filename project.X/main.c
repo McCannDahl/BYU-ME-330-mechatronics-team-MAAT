@@ -88,7 +88,7 @@ int main(void) {
         while(irInput1>irSensorAnalogThreshold){irInput1 = ADC1BUF10;}//wait for IR input
         __delay_ms(400);
         while(1){
-        //////////////////////MOVING TWARD DISPENSOR////////////////////////////////////////
+        //////////////////////MOVING BASE TWARD DISPENSOR////////////////////////////////////////
             moveBase('B',.8);
             while(!_RA3){}//wait for touch sensor
             stopBase();
@@ -96,11 +96,11 @@ int main(void) {
             for(i=0;i<numberOfBalls;i++){
                 flashLight(60);
             }
-        //////////////////////MOVING AWAY FROM DISPENSOR////////////////////////////////////////
+        //////////////////////MOVING BASE AWAY FROM DISPENSOR////////////////////////////////////////
             moveBase('F',.8);
             moveLauncher(.9);
             __delay_ms(400);
-        //////////////////////MOVE TWARD GOAL////////////////////////////////////////
+        //////////////////////ROTATE BASE TWARD GOAL////////////////////////////////////////
             if(irInput1>irSensorAnalogThreshold){
                 goal = MiddleGoal;
             }
@@ -120,7 +120,7 @@ int main(void) {
             __delay_ms(1800);
             stopFeeder();
             stopLauncher();
-        //////////////////////MOVE AWAY FROM GOAL////////////////////////////////////////
+        //////////////////////ROTATE BASE AWAY FROM GOAL////////////////////////////////////////
             if(goal == LeftGoal){
                 moveBase('L',.7);
                 __delay_ms(200);
