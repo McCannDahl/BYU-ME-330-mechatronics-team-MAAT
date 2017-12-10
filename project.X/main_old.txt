@@ -101,73 +101,30 @@ void __attribute__((interrupt, no_auto_psv)) _T1Interrupt(void)
             irInput1 = ADC1BUF10;
             irInput2 = ADC1BUF9;
             if(irInput1>irSensorAnalogThreshold){
-                                goal = MiddleGoal;
-            }
-            else if(irInput2>irSensorAnalogThreshold){
                 goal = LeftGoal;
-                baseDirection = RotateRight;
-                speedUpBase(.7);
-                moveBase();
-            }
-            else{
-                goal = RightGoal;
                 baseDirection = RotateLeft;
                 speedUpBase(.7);
                 moveBase();
             }
+            else if(irInput2>irSensorAnalogThreshold){
+                goal = MiddleGoal;
+            }
+            else{
+                goal = RightGoal;
+                baseDirection = RotateRight;
+                speedUpBase(.7);
+                moveBase();
+            }
             state = Finding_Goal;
-            flashLight(100);
-            
-            
-                stopBase();
-                //_LATA1 = 0;
-                //Turn on shooting motors
-                launcherSpeedPercent = .9;
-                moveLauncher();
-                
-            flashLight(100);
-                
-                _LATB0 = 1;
-                OC2R = 200;
-                OC2RS = 800;
-                
-            flashLight(1000);
-            
-            stopLauncher();
-            
-                _LATB0 = 1;
-                OC2R = 0;
-                OC2RS = 800;
-                
-                if(goal == LeftGoal){
-                    
-                        baseDirection = RotateLeft;
-                        speedUpBase(.7);
-                        moveBase();
-                    flashLight(100);
-                }else if(goal == RightGoal){
-                    
-                        baseDirection = RotateRight;
-                        speedUpBase(.7);
-                        moveBase();
-                    flashLight(100);
-                }
-                
-                
-            state = Moving_Tward_Dispencer;
+            setTimer(1000);
             break;
         case Finding_Goal:
             slowDownBase();
             state = Shooting;
-            setTimer(8000);
+            setTimer(500000);
             break;
         case Shooting:
             stopLauncher();
-            
-                _LATB0 = 1;
-                OC2R = 0;
-                OC2RS = 800;
-                
             _LATA1 = 1;
             state = Moving_Tward_Dispencer;
             break;
@@ -262,16 +219,16 @@ int main(void) {
                 if(irInput1>irSensorAnalogThreshold){
                     flashLight(100);
                     
-                    __delay_ms(200);//This is because the robot still has to turn 90 degrees left
+                    __delay_ms(300);//This is because the robot still has to turn 90 degrees left
                     
                     state = Moving_Tward_Dispencer;
                     slowDownBase();
                 }
                 else if(irInput2>irSensorAnalogThreshold){
-                    //flashLight(100);
-                    //__delay_ms(300);//This is because the robot still has to turn 90 degrees left
-                    //state = Moving_Tward_Dispencer;
-                    //slowDownBase();
+                    flashLight(100);
+                    __delay_ms(300);//This is because the robot still has to turn 90 degrees left
+                    state = Moving_Tward_Dispencer;
+                    slowDownBase();
                 }
                 break;
             case Moving_Tward_Dispencer:
@@ -298,7 +255,7 @@ int main(void) {
                 }
                 //Done after numberOfBalls flashes
                 state = Moving_Away_From_Dispencer;
-                setTimer(11000);
+                setTimer(10000);
                 break;
             case Moving_Away_From_Dispencer:
                 //Set direction of both base motors
@@ -313,16 +270,10 @@ int main(void) {
                 //moveTurret();
                 break;
             case Shooting:
-                stopBase();
-                //_LATA1 = 0;
+                _LATA1 = 0;
                 //Turn on shooting motors
                 launcherSpeedPercent = .7;
                 moveLauncher();
-                
-                _LATB0 = 1;
-                OC2R = 200;
-                OC2RS = 800;
-                
                 //Turn on Geniva
                 //Done after timer and no balls?
                 break;
@@ -601,7 +552,7 @@ void moveBase(){
             break;
         case RotateRight:
             _LATB13 = 0;
-            _LATB12 = 1;
+            _LATB12 = 0;
             break;
         default:
             motorSpeedPercent = .000001;
@@ -616,7 +567,7 @@ void stopBase(){
     _LATA0 = 0;
     _LATA2 = 0;
     motorSpeedPercent = .000001;
-    OC1R = 0;
+    OC1R = motorPwmDutyCycle*(1.0/motorSpeedPercent);
     OC1RS = motorPwmDutyCycle*(1.0/motorSpeedPercent)*2;
 }
 void moveTurret(){

@@ -30,6 +30,9 @@
       <itemPath>test_collect_balls.txt</itemPath>
       <itemPath>test_back_ball_2.txt</itemPath>
       <itemPath>latest_sensor_test.txt</itemPath>
+      <itemPath>test_feeder.txt</itemPath>
+      <itemPath>main_old.txt</itemPath>
+      <itemPath>test_turn_90.txt</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
