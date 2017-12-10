@@ -55,7 +55,6 @@ void stopBase();
 void stopTurret();
 void stopLauncher();
 
-
 // Change Notification Interrupt Service Routine (ISR)
 void __attribute__((interrupt, no_auto_psv)) _CNInterrupt(void)
 {
@@ -101,32 +100,75 @@ void __attribute__((interrupt, no_auto_psv)) _T1Interrupt(void)
             irInput1 = ADC1BUF10;
             irInput2 = ADC1BUF9;
             if(irInput1>irSensorAnalogThreshold){
-                goal = LeftGoal;
-                baseDirection = RotateLeft;
-                speedUpBase(.7);
-                moveBase();
+                                goal = MiddleGoal;
             }
             else if(irInput2>irSensorAnalogThreshold){
-                goal = MiddleGoal;
-            }
-            else{
-                goal = RightGoal;
+                goal = LeftGoal;
                 baseDirection = RotateRight;
                 speedUpBase(.7);
                 moveBase();
             }
+            else{
+                goal = RightGoal;
+                baseDirection = RotateLeft;
+                speedUpBase(.7);
+                moveBase();
+            }
             state = Finding_Goal;
-            setTimer(4000);
+            flashLight(100);
+            
+            
+                stopBase();
+                //_LATA1 = 0;
+                //Turn on shooting motors
+                launcherSpeedPercent = .9;
+                moveLauncher();
+                
+            flashLight(100);
+                
+                _LATB0 = 1;
+                OC2R = 200;
+                OC2RS = 800;
+                
+            flashLight(1000);
+            
+            stopLauncher();
+            
+                _LATB0 = 1;
+                OC2R = 0;
+                OC2RS = 800;
+                
+                if(goal == LeftGoal){
+                    
+                        baseDirection = RotateLeft;
+                        speedUpBase(.7);
+                        moveBase();
+                    flashLight(100);
+                }else if(goal == RightGoal){
+                    
+                        baseDirection = RotateRight;
+                        speedUpBase(.7);
+                        moveBase();
+                    flashLight(100);
+                }
+                
+                
+            state = Moving_Tward_Dispencer;
             break;
         case Finding_Goal:
             slowDownBase();
             state = Shooting;
-            setTimer(500000);
+            setTimer(8000);
             break;
         case Shooting:
             stopLauncher();
+            
+                _LATB0 = 1;
+                OC2R = 0;
+                OC2RS = 800;
+                
             _LATA1 = 1;
-            //state = Moving_Tward_Dispencer;
+            state = Moving_Tward_Dispencer;
             break;
         default:
             break;
@@ -196,9 +238,9 @@ int main(void) {
     state = Looking_For_Dispencer;
     
     
-            flashLight(10);
-            flashLight(10);
-            flashLight(10);
+            flashLight(100);
+            flashLight(100);
+            flashLight(100);
     
     int i = 0;
     
@@ -219,16 +261,16 @@ int main(void) {
                 if(irInput1>irSensorAnalogThreshold){
                     flashLight(100);
                     
-                    __delay_ms(300);//This is because the robot still has to turn 90 degrees left
+                    __delay_ms(200);//This is because the robot still has to turn 90 degrees left
                     
                     state = Moving_Tward_Dispencer;
                     slowDownBase();
                 }
                 else if(irInput2>irSensorAnalogThreshold){
-                    flashLight(100);
-                    __delay_ms(300);//This is because the robot still has to turn 90 degrees left
-                    state = Moving_Tward_Dispencer;
-                    slowDownBase();
+                    //flashLight(100);
+                    //__delay_ms(300);//This is because the robot still has to turn 90 degrees left
+                    //state = Moving_Tward_Dispencer;
+                    //slowDownBase();
                 }
                 break;
             case Moving_Tward_Dispencer:
