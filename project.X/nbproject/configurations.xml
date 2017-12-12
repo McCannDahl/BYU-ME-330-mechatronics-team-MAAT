@@ -33,6 +33,7 @@
       <itemPath>test_feeder.txt</itemPath>
       <itemPath>main_old.txt</itemPath>
       <itemPath>test_turn_90.txt</itemPath>
+      <itemPath>latest_working.txt</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
