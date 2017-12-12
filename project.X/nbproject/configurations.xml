@@ -13,8 +13,6 @@
                    displayName="Source Files"
                    projectFiles="true">
       <itemPath>main.c</itemPath>
-      <itemPath>basic sudo code.txt</itemPath>
-      <itemPath>advanced sudo code.txt</itemPath>
       <itemPath>test_ir.txt</itemPath>
       <itemPath>test_analog.txt</itemPath>
       <itemPath>test_touch_sensor_interupt.txt</itemPath>

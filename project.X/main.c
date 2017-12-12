@@ -27,8 +27,11 @@ int irSensorAnalogThreshold = 800;
 //--------------------------------------------------
 
 float irInput1 = 0;
+float irInput1_old = 0;
 float irInput2 = 0;
 float blackBallInput = 0;
+
+int haveBallz = 0;
 
 void initInputOutput();
 void initDigitalPorts();
@@ -43,6 +46,8 @@ void stopBase();
 void stopLauncher();
 void stopTurret();
 void stopFeeder();
+void speedUpBase(char baseDirection, float newMotorSpeedPercent);
+void slowDownBase(char baseDirection, float oldMotorSpeedPercent);
 
 int main(void) {
     
@@ -82,6 +87,7 @@ int main(void) {
     
     float i = 0;
     float j = 0;
+    int trys = 0;
     
     char goal = 'M';
     
@@ -90,72 +96,149 @@ int main(void) {
     stopTurret();
     stopFeeder();
     
+    irInput1 = ADC1BUF10;
+    irInput1_old = irInput1;
+    
+    
+    //    moveLauncher(.9);
     while(1){
         
+        
+        blackBallInput = ADC1BUF4;
+        if(blackBallInput>30){
+            _LATA0 = 0;
+        }else{
+            _LATA0 = 1;
+        }
+         
+    }
+    
+    while(1){
+        
+        speedUpBase('F',1);
+        __delay_ms(100);
+        moveBase('B',1);
+        __delay_ms(110);
+        
         //////////////////////LOOKING FOR DISPENSOR////////////////////////////////////////
-        speedUpBase('L',.7);
+        speedUpBase('L',.9);
         //todo: add logic for input 2 in while loop and if statement
-        while(irInput1>irSensorAnalogThreshold){irInput1 = ADC1BUF10;}//wait for IR input
-        slowDownBase('L',.7);
-        speedUpBase('R',.7);
-        __delay_ms(700);
+        irInput1 = ADC1BUF10;
+        while(irInput1<irSensorAnalogThreshold){irInput1 = ADC1BUF10;}//wait for IR input
+        slowDownBase('L',.9);
+        speedUpBase('R',.9);
+        __delay_ms(320);
         while(1){
-        //////////////////////MOVING BASE TWARD DISPENSOR////////////////////////////////////////
-            speedUpBase('B',.8);
-            while(!_RA3){}//wait for touch sensor
-            slowDownBase('B',.8);
-        //////////////////////GETTING BALLZ////////////////////////////////////////
-            for(i=0;i<numberOfBalls;i++){
-                flashLight(60);
-            }
-        //////////////////////MOVING BASE AWAY FROM DISPENSOR////////////////////////////////////////
-            speedUpBase('F',.8);
-            __delay_ms(680);
-        //////////////////////ROTATE BASE TWARD GOAL////////////////////////////////////////
-            if(irInput1>irSensorAnalogThreshold){
-                goal = 'M';
-                __delay_ms(10);
-                slowDownBase('F',.8);
-            }
-            else if(irInput2>irSensorAnalogThreshold){
-                goal = 'L';
-                moveBase('R',.7);
-                __delay_ms(185);
-                slowDownBase('R',.7);
-            }
-            else{
-                goal = 'R';
-                moveBase('L',.7);
-                __delay_ms(185);
-                slowDownBase('L',.7);
-            }
-        //////////////////////FINE TUNE GOAL////////////////////////////////////////
-            moveBase('L',.3);
-            while(irInput1>irSensorAnalogThreshold){}
-            moveBase('R',.1);
-            while(irInput1<irSensorAnalogThreshold){}
-            moveBase('R',.2);
+            //////////////////////MOVING BASE TWARD DISPENSOR////////////////////////////////////////
+            speedUpBase('B',1);
+            __delay_ms(420);
+            speedUpBase('B',.6);
             i = 0;
-            while(irInput1>irSensorAnalogThreshold){
+            while(!_RA3 || i<6000){i += 1;}//wait for touch sensor
+            slowDownBase('B',.6);
+            speedUpBase('L',.055);
+            __delay_ms(100);
+            speedUpBase('R',.055);
+            __delay_ms(100);
+            speedUpBase('B',.055);
+            __delay_ms(100);
+            stopBase();
+            __delay_ms(100);
+            //////////////////////GETTING BALLZ////////////////////////////////////////
+            i = 0;
+            while(i<11){
+                _LATA0 = 1;
+                moveBase('B',.06);
+                __delay_ms(100);
+                _LATA0 = 0;
+                moveBase('F',.06);
+                __delay_ms(100);
                 i += 1;
             }
-            moveBase('L',.2);
-            j=0;
-            while(j<i/2.0){}
-        //////////////////////SHOOT////////////////////////////////////////
-            moveLauncher(.9);
-            __delay_ms(400);
-            moveFeeder();
-            __delay_ms(1800);
-            stopFeeder();
-            stopLauncher();
-        //////////////////////ROTATE BASE AWAY FROM GOAL////////////////////////////////////////
-            if(goal == 'L'){
-                moveBase('L',.7);
-                __delay_ms(200);
-            }else if(goal == 'R'){
-                moveBase('R',.7);
-                __delay_ms(200);
+            _LATA0 = 0;
+            haveBallz = 1;
+            //////////////////////MOVING BASE AWAY FROM DISPENSOR////////////////////////////////////////
+            speedUpBase('F',.8);
+            __delay_ms(660);
+            trys = 0;
+            while(haveBallz && trys<3){
+                //////////////////////ROTATE BASE TWARD GOAL////////////////////////////////////////
+                irInput1 = ADC1BUF10;
+                irInput2 = ADC1BUF9;
+                if(irInput1>irSensorAnalogThreshold){
+                    goal = 'M';
+                    __delay_ms(10);
+                    slowDownBase('F',.8);
+                }
+                else if(irInput2>irSensorAnalogThreshold){
+                    goal = 'L';
+                    moveBase('R',.7);
+                    __delay_ms(215);//this must match below
+                    slowDownBase('R',.7);
+                }
+                else{
+                    goal = 'R';
+                    moveBase('L',.7);
+                    __delay_ms(210);//this must match below
+                    slowDownBase('L',.7);
+                }
+                irInput1 = ADC1BUF10;
+                if(irInput1>irSensorAnalogThreshold){
+                    //////////////////////FINE TUNE GOAL////////////////////////////////////////
+                    i = 0;
+                    j = 0;
+                    irInput1_old = irInput1;
+                    irInput1 = ADC1BUF10;
+                    moveBase('L',.1);
+                    while( !(irInput1<irSensorAnalogThreshold && irInput1_old>irSensorAnalogThreshold) ){irInput1_old = irInput1;irInput1 = ADC1BUF10;}
+                    moveBase('R',.1);
+                    __delay_ms(30);
+                    while( !(irInput1<irSensorAnalogThreshold && irInput1_old>irSensorAnalogThreshold) ){irInput1_old = irInput1;irInput1 = ADC1BUF10;i=i+1;}
+
+                    moveBase('L',.1);
+                    while(j<i/2.0){j += 1;}
+                    stopBase();
+                    //////////////////////SHOOT////////////////////////////////////////
+                    moveLauncher(.9);
+                    __delay_ms(400);
+                    moveFeeder();
+                    __delay_ms(1800);
+                    stopFeeder();
+                    stopLauncher();
+                    haveBallz = 0;
+                }else{
+                    trys += 1;
+                }
+                //////////////////////ROTATE BASE AWAY FROM GOAL////////////////////////////////////////
+                if(goal == 'L'){
+                    moveBase('L',.7);
+                    __delay_ms(215);//this must match above
+                    slowDownBase('L',.7);
+                }else if(goal == 'R'){
+                    moveBase('R',.7);
+                    __delay_ms(190);//this must match above
+                    slowDownBase('R',.7);
+                }
+                
+                //If you havent found the goal, go back to the corner and re-align yourself
+                if(trys>2){
+                    //////////////////////MOVING BASE TWARD DISPENSOR////////////////////////////////////////
+                    speedUpBase('B',1);
+                    __delay_ms(420);
+                    speedUpBase('B',.6);
+                    i = 0;
+                    while(!_RA3 || i<6000){i += 1;}//wait for touch sensor
+                    slowDownBase('B',.6);
+                    speedUpBase('L',.05);
+                    __delay_ms(50);
+                    speedUpBase('R',.05);
+                    __delay_ms(50);
+                    stopBase();
+                    //////////////////////MOVING BASE AWAY FROM DISPENSOR////////////////////////////////////////
+                    speedUpBase('F',.8);
+                    __delay_ms(660);
+                    trys = 0;
+                }
             }
         }
     
@@ -402,7 +485,7 @@ void moveBase(char baseDirection, float speed){
 void stopBase(){
     _LATA2 = 0;//sleep
     OC1R = 0;
-    OC1RS = 99999;
+    OC1RS = 9999;
 }
 void moveLauncher(float speed){
     OC3R = launcherPwmDutyCycle*speed;
@@ -412,13 +495,23 @@ void moveLauncher(float speed){
 void stopLauncher(){
     _LATB1 = 0;
     OC3R = 0;
-    OC3RS = 99999;
+    OC3RS = 9999;
 }
 void moveFeeder(){
-    _LATA1 = 0;
+    //_LATA1 = 0;
+    
+                _LATB0 = 1;
+                OC2R = 200;
+                OC2RS = 800;
+                
 }
 void stopFeeder(){
-    _LATA1 = 1;
+    //_LATA1 = 1;
+    
+                _LATB0 = 1;
+                OC2R = 0;
+                OC2RS = 800;
+                
 }
 void moveTurret(char turretDirection){
     switch (turretDirection){
