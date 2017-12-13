@@ -99,20 +99,6 @@ int main(void) {
     irInput1 = ADC1BUF10;
     irInput1_old = irInput1;
     
-    
-    //    moveLauncher(.9);
-    while(1){
-        
-        
-        blackBallInput = ADC1BUF4;
-        if(blackBallInput>30){
-            _LATA0 = 0;
-        }else{
-            _LATA0 = 1;
-        }
-         
-    }
-    
     while(1){
         
         speedUpBase('F',1);
@@ -148,11 +134,11 @@ int main(void) {
             i = 0;
             while(i<11){
                 _LATA0 = 1;
-                moveBase('B',.06);
-                __delay_ms(100);
+                moveBase('B',.07);
+                __delay_ms(60);
                 _LATA0 = 0;
-                moveBase('F',.06);
-                __delay_ms(100);
+                moveBase('F',.07);
+                __delay_ms(40);
                 i += 1;
             }
             _LATA0 = 0;
@@ -501,7 +487,7 @@ void moveFeeder(){
     //_LATA1 = 0;
     
                 _LATB0 = 1;
-                OC2R = 200;
+                OC2R = 410;
                 OC2RS = 800;
                 
 }
