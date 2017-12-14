@@ -98,21 +98,21 @@ Program Memory  [Origin = 0x200, Length = 0x2a00]
 section                    address   length (PC units)   length (bytes) (dec)
 -------                    -------   -----------------   --------------------
 .text                        0x200               0x6f4           0xa6e  (2670)
-.text                        0x8f4               0x79a           0xb67  (2919)
-.dinit                      0x108e                0x1e            0x2d  (45)
-.init.delay32               0x10ac                0x1c            0x2a  (42)
+.text                        0x8f4               0xaac          0x1002  (4098)
+.dinit                      0x13a0                0x26            0x39  (57)
+.init.delay32               0x13c6                0x1c            0x2a  (42)
 
-                 Total program memory used (bytes):         0x162c  (5676) 35%
+                 Total program memory used (bytes):         0x1ad3  (6867) 42%
 
 
 Data Memory  [Origin = 0x800, Length = 0x800]
 
 section                    address      alignment gaps    total length  (dec)
 -------                    -------      --------------    -------------------
-.ndata                       0x800                   0            0x16  (22)
-.nbss                        0x816                   0            0x12  (18)
+.ndata                       0x800                   0            0x24  (36)
+.nbss                        0x824                   0            0x1c  (28)
 
-                 Total data memory used (bytes):           0x28  (40) 1%
+                 Total data memory used (bytes):           0x40  (64) 3%
 
 
 Dynamic Memory Usage
@@ -120,9 +120,9 @@ Dynamic Memory Usage
 region                     address                      maximum length  (dec)
 ------                     -------                      ---------------------
 heap                             0                                   0  (0)
-stack                        0x828                               0x7d8  (2008)
+stack                        0x840                               0x7c0  (1984)
 
-                 Maximum dynamic memory (bytes):          0x7d8  (2008)
+                 Maximum dynamic memory (bytes):          0x7c0  (1984)
 
 
 External Symbols in Data Memory (by address):
@@ -134,26 +134,46 @@ External Symbols in Data Memory (by address):
                     0x0810                  _numberOfBalls
                     0x0812                  _maxIrSensorAnalogInput
                     0x0814                  _irSensorAnalogThreshold
-                    0x0816                  _irInput1
-                    0x081a                  _irInput1_old
-                    0x081e                  _irInput2
-                    0x0822                  _blackBallInput
-                    0x0826                  _haveBallz
+                    0x0816                  _whiteLow
+                    0x0818                  _whiteHigh
+                    0x081a                  _blackLow
+                    0x081c                  _blackHigh
+                    0x081e                  _noLow
+                    0x0820                  _noHigh
+                    0x0822                  _goal
+                    0x0824                  _i
+                    0x0828                  _j
+                    0x082c                  _trys
+                    0x082e                  _irInput1
+                    0x0832                  _irInput1_old
+                    0x0836                  _irInput2
+                    0x083a                  _blackBallInput
+                    0x083e                  _haveBallz
 
 External Symbols in Data Memory (by name):
 
-                    0x0822                  _blackBallInput
-                    0x0826                  _haveBallz
-                    0x0816                  _irInput1
-                    0x081a                  _irInput1_old
-                    0x081e                  _irInput2
+                    0x083a                  _blackBallInput
+                    0x081c                  _blackHigh
+                    0x081a                  _blackLow
+                    0x0822                  _goal
+                    0x083e                  _haveBallz
+                    0x0824                  _i
+                    0x082e                  _irInput1
+                    0x0832                  _irInput1_old
+                    0x0836                  _irInput2
                     0x0814                  _irSensorAnalogThreshold
+                    0x0828                  _j
                     0x0804                  _launcherPwmDutyCycle
                     0x0812                  _maxIrSensorAnalogInput
                     0x0800                  _motorPwmDutyCycle
+                    0x0820                  _noHigh
+                    0x081e                  _noLow
                     0x0810                  _numberOfBalls
+                    0x082c                  _trys
                     0x080c                  _turretPwmDutyCycle
                     0x0808                  _turretPwmPeriod
+                    0x0818                  _whiteHigh
+                    0x0816                  _whiteLow
 
 External Symbols in Program Memory (by address):
 
@@ -192,28 +212,28 @@ External Symbols in Program Memory (by address):
                   0x000852                  ___floatundisf
                   0x0008b0                  ___umuldi3
                   0x0008f4                  _main
-                  0x000d64                  _initInputOutput
-                  0x000d82                  _initDigitalPorts
-                  0x000da0                  _initAnalogPorts
-                  0x000dec                  _initPwmPorts
-                  0x000e7a                  _moveBase
-                  0x000f04                  _stopBase
-                  0x000f12                  _moveLauncher
-                  0x000f34                  _stopLauncher
-                  0x000f42                  _moveFeeder
-                  0x000f52                  _stopFeeder
-                  0x000f60                  _moveTurret
-                  0x000fb2                  _stopTurret
-                  0x000fce                  _speedUpBase
-                  0x001010                  _slowDownBase
-                  0x001052                  _flashLight
-                  0x0010ac                  ___delay32
+                  0x001076                  _initInputOutput
+                  0x001094                  _initDigitalPorts
+                  0x0010b2                  _initAnalogPorts
+                  0x0010fe                  _initPwmPorts
+                  0x00118c                  _moveBase
+                  0x001216                  _stopBase
+                  0x001224                  _moveLauncher
+                  0x001246                  _stopLauncher
+                  0x001254                  _moveFeeder
+                  0x001264                  _stopFeeder
+                  0x001272                  _moveTurret
+                  0x0012c4                  _stopTurret
+                  0x0012e0                  _speedUpBase
+                  0x001322                  _slowDownBase
+                  0x001364                  _flashLight
+                  0x0013c6                  ___delay32
 
 External Symbols in Program Memory (by name):
 
                   0x0002c8                  __DefaultInterrupt
                   0x0002d0                  ___addsf3
-                  0x0010ac                  ___delay32
+                  0x0013c6                  ___delay32
                   0x0006ee                  ___divdi3
                   0x00038a                  ___divsf3
                   0x00040e                  ___eqsf2
@@ -246,22 +266,22 @@ External Symbols in Program Memory (by name):
                   0x00050e                  __funpack2
                   0x00023c                  __psv_init
                   0x000200                  __resetPRI
-                  0x001052                  _flashLight
-                  0x000da0                  _initAnalogPorts
-                  0x000d82                  _initDigitalPorts
-                  0x000d64                  _initInputOutput
-                  0x000dec                  _initPwmPorts
+                  0x001364                  _flashLight
+                  0x0010b2                  _initAnalogPorts
+                  0x001094                  _initDigitalPorts
+                  0x001076                  _initInputOutput
+                  0x0010fe                  _initPwmPorts
                   0x0008f4                  _main
-                  0x000e7a                  _moveBase
-                  0x000f42                  _moveFeeder
-                  0x000f12                  _moveLauncher
-                  0x000f60                  _moveTurret
-                  0x001010                  _slowDownBase
-                  0x000fce                  _speedUpBase
-                  0x000f04                  _stopBase
-                  0x000f52                  _stopFeeder
-                  0x000f34                  _stopLauncher
-                  0x000fb2                  _stopTurret
+                  0x00118c                  _moveBase
+                  0x001254                  _moveFeeder
+                  0x001224                  _moveLauncher
+                  0x001272                  _moveTurret
+                  0x001322                  _slowDownBase
+                  0x0012e0                  _speedUpBase
+                  0x001216                  _stopBase
+                  0x001264                  _stopFeeder
+                  0x001246                  _stopLauncher
+                  0x0012c4                  _stopTurret
 
 Memory Configuration
 
@@ -439,26 +459,26 @@ __FDS
 .comment
  *(.comment)
 
-.debug_info       0x000000       0x2121
+.debug_info       0x000000       0x2207
  *(.debug_info)
- .debug_info      0x000000       0x2121 build/default/production/main.o
+ .debug_info      0x000000       0x2207 build/default/production/main.o
  *(.gnu.linkonce.wi.*)
 
-.debug_abbrev     0x000000        0x17d
+.debug_abbrev     0x000000        0x16a
  *(.debug_abbrev)
- .debug_abbrev    0x000000        0x17d build/default/production/main.o
+ .debug_abbrev    0x000000        0x16a build/default/production/main.o
 
-.debug_line       0x000000        0x1d7
+.debug_line       0x000000        0x21e
  *(.debug_line)
- .debug_line      0x000000        0x1d7 build/default/production/main.o
+ .debug_line      0x000000        0x21e build/default/production/main.o
 
 .debug_frame      0x000000        0x1e6
  *(.debug_frame)
  .debug_frame     0x000000        0x1e6 build/default/production/main.o
 
-.debug_str        0x000000        0x240
+.debug_str        0x000000        0x266
  *(.debug_str)
- .debug_str       0x000000        0x240 build/default/production/main.o
+ .debug_str       0x000000        0x266 build/default/production/main.o
 
 .debug_loc
  *(.debug_loc)
@@ -467,10 +487,10 @@ __FDS
  *(.debug_macinfo)
 
 .debug_pubnames
-                  0x000000        0x200
+                  0x000000        0x269
  *(.debug_pubnames)
  .debug_pubnames
-                  0x000000        0x200 build/default/production/main.o
+                  0x000000        0x269 build/default/production/main.o
 
 .debug_ranges
  *(.debug_ranges)
@@ -1151,8 +1171,8 @@ __c30_signature
  __c30_signature
                   0x0002fe          0x6 c:/program files (x86)/microchip/xc16/v1.32/bin/bin/../../lib\libm-elf.a(umuldi3.eo)
 
-.ndata              0x0800         0x16
- .ndata             0x0800         0x16 build/default/production/main.o
+.ndata              0x0800         0x24
+ .ndata             0x0800         0x24 build/default/production/main.o
                     0x0800                  _motorPwmDutyCycle
                     0x0804                  _launcherPwmDutyCycle
                     0x0808                  _turretPwmPeriod
@@ -1160,14 +1180,24 @@ __c30_signature
                     0x0810                  _numberOfBalls
                     0x0812                  _maxIrSensorAnalogInput
                     0x0814                  _irSensorAnalogThreshold
+                    0x0816                  _whiteLow
+                    0x0818                  _whiteHigh
+                    0x081a                  _blackLow
+                    0x081c                  _blackHigh
+                    0x081e                  _noLow
+                    0x0820                  _noHigh
+                    0x0822                  _goal
 
-.nbss               0x0816         0x12
- .nbss              0x0816         0x12 build/default/production/main.o
-                    0x0816                  _irInput1
-                    0x081a                  _irInput1_old
-                    0x081e                  _irInput2
-                    0x0822                  _blackBallInput
-                    0x0826                  _haveBallz
+.nbss               0x0824         0x1c
+ .nbss              0x0824         0x1c build/default/production/main.o
+                    0x0824                  _i
+                    0x0828                  _j
+                    0x082c                  _trys
+                    0x082e                  _irInput1
+                    0x0832                  _irInput1_old
+                    0x0836                  _irInput2
+                    0x083a                  _blackBallInput
+                    0x083e                  _haveBallz
 
 .config_ICS       0xf8000e          0x2
  .config_ICS      0xf8000e          0x2 build/default/production/main.o
@@ -1182,28 +1212,28 @@ __c30_signature
 .config_IESO      0xf80006          0x2
  .config_IESO     0xf80006          0x2 build/default/production/main.o
 
-.text             0x0008f4        0x79a
- .text            0x0008f4        0x79a build/default/production/main.o
+.text             0x0008f4        0xaac
+ .text            0x0008f4        0xaac build/default/production/main.o
                   0x0008f4                  _main
-                  0x000d64                  _initInputOutput
-                  0x000d82                  _initDigitalPorts
-                  0x000da0                  _initAnalogPorts
-                  0x000dec                  _initPwmPorts
-                  0x000e7a                  _moveBase
-                  0x000f04                  _stopBase
-                  0x000f12                  _moveLauncher
-                  0x000f34                  _stopLauncher
-                  0x000f42                  _moveFeeder
-                  0x000f52                  _stopFeeder
-                  0x000f60                  _moveTurret
-                  0x000fb2                  _stopTurret
-                  0x000fce                  _speedUpBase
-                  0x001010                  _slowDownBase
-                  0x001052                  _flashLight
+                  0x001076                  _initInputOutput
+                  0x001094                  _initDigitalPorts
+                  0x0010b2                  _initAnalogPorts
+                  0x0010fe                  _initPwmPorts
+                  0x00118c                  _moveBase
+                  0x001216                  _stopBase
+                  0x001224                  _moveLauncher
+                  0x001246                  _stopLauncher
+                  0x001254                  _moveFeeder
+                  0x001264                  _stopFeeder
+                  0x001272                  _moveTurret
+                  0x0012c4                  _stopTurret
+                  0x0012e0                  _speedUpBase
+                  0x001322                  _slowDownBase
+                  0x001364                  _flashLight
 
-.dinit            0x00108e         0x1e
- .dinit           0x00108e         0x1e data_init
+.dinit            0x0013a0         0x26
+ .dinit           0x0013a0         0x26 data_init
 
-.init.delay32     0x0010ac         0x1c
- .init.delay32    0x0010ac         0x1c c:/program files (x86)/microchip/xc16/v1.32/bin/bin/../../lib\liblega-pic30-elf.a(delay32.Leo)
-                  0x0010ac                  ___delay32
+.init.delay32     0x0013c6         0x1c
+ .init.delay32    0x0013c6         0x1c c:/program files (x86)/microchip/xc16/v1.32/bin/bin/../../lib\liblega-pic30-elf.a(delay32.Leo)
+                  0x0013c6                  ___delay32
