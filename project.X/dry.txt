@@ -129,17 +129,16 @@ int main(void) {
             __delay_ms(460);
             speedUpBase('B',.6);
             i = 0;
-            while(!_RA3 || i<4000){i += 1;}//wait for touch sensor
+            while(!_RA3 || i<5500){i += 1;}//wait for touch sensor
             slowDownBase('B',.6);
-            speedUpBase('L',.07);
+            speedUpBase('L',.055);
             __delay_ms(50);
-            speedUpBase('R',.07);
+            speedUpBase('R',.055);
             __delay_ms(50);
-            speedUpBase('B',.07);
+            speedUpBase('B',.055);
             __delay_ms(50);
             stopBase();
             //////////////////////GETTING BALLZ////////////////////////////////////////
-            //moveLauncher(.3);
             i = 0;
             while(i<8){//it does X2
                 _LATA0 = 1;
@@ -157,7 +156,6 @@ int main(void) {
                 numberOfBalls = 11;
                 haveBallz = 1;
             }
-            //stopLauncher();
             //////////////////////MOVING BASE AWAY FROM DISPENSOR////////////////////////////////////////
             speedUpBase('F',1);
             __delay_ms(500);
@@ -208,7 +206,6 @@ int main(void) {
                 if(irInput1>irSensorAnalogThreshold){
                     
                         //////////////////////FINE TUNE GOAL////////////////////////////////////////
-                            
                             i = 0;
                             j = 0;
                             irInput1_old = irInput1;
@@ -221,25 +218,19 @@ int main(void) {
                             moveBase('L',.1);
                             while(j<(i/2)){j += 1;}
                             stopBase();
-                            
-                            
                             if(goal == 'M'){//it is shooting right
                                 moveBase('L',.1);
                                 __delay_ms(20);
-                                stopBase();
                             }
                             if(goal == 'R'){//it is shooting right
-                                //moveBase('L',.1);
-                                //__delay_ms(20);
-                                //stopBase();
+                                moveBase('L',.1);
+                                __delay_ms(20);
                             }
                             if(goal == 'L'){//it is shooting left
-                                moveBase('R',.1);
-                                __delay_ms(20);
-                                stopBase();
+                                //moveBase('R',.1);
+                                //__delay_ms(20);
                             }
-                            
-                             
+                    
                     //////////////////////SHOOT////////////////////////////////////////
                     moveLauncher(.3);
                     __delay_ms(100);
@@ -293,13 +284,13 @@ int main(void) {
                     __delay_ms(460);
                     speedUpBase('B',.6);
                     i = 0;
-                    while(!_RA3 || i<4000){i += 1;}//wait for touch sensor
+                    while(!_RA3 || i<5500){i += 1;}//wait for touch sensor
                     slowDownBase('B',.6);
-                    speedUpBase('L',.07);
+                    speedUpBase('L',.055);
                     __delay_ms(50);
-                    speedUpBase('R',.07);
+                    speedUpBase('R',.055);
                     __delay_ms(50);
-                    speedUpBase('B',.07);
+                    speedUpBase('B',.055);
                     __delay_ms(50);
                     stopBase();
                     //////////////////////MOVING BASE AWAY FROM DISPENSOR////////////////////////////////////////
